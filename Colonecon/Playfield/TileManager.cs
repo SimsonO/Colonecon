@@ -1,43 +1,41 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 public class TileManager
 {
-    private Vector2 _gridSize;
-    public Dictionary<Vector2, Tile> Grid {get; private set;}
+    public Point MapSize {get; private set;}
+    public Dictionary<Point, Tile> TileMap {get; private set;}
+    private Random _rnd;
 
-    public TileManager(Vector2 gridSize)
+    public TileManager(Point mapSize)
     {
-        _gridSize = gridSize;
-        Grid = new Dictionary<Vector2, Tile>();
-        GenerateGrid();
+        MapSize = mapSize;
+        TileMap = new Dictionary<Point, Tile>();
+        _rnd = new Random();
+        GenerateTileMap();
     }
 
-    public void GenerateGrid()
+    public void GenerateTileMap()
     {
-        Grid.Clear();
-        for (int i = 0; i < _gridSize.X;i++)
+        TileMap.Clear();
+        for (int i = 0; i < MapSize.Y;i++)
         {
-            int j = 0;
             //for odd rows we want 1 tile more then for even
-            if(i % 2 == 0 )
+           for (int j = 0; j < MapSize.X - i % 2; j++)
             {
-                j++;
-            }
-            while(j < _gridSize.Y)
-            {
-                Vector2 coordinates = new Vector2(j,i);
-                Tile tile = new Tile( GetRandomTileType());
-                Grid.Add(coordinates, tile);
-                j++;
+                Point coordinates = new Point(j,i);
+                Tile tile = new Tile( GetRandomMiraDeposit());
+                TileMap.Add(coordinates, tile);
             }
         }
 
     }
 
-    private TileType GetRandomTileType()
+    private int GetRandomMiraDeposit()
     {
-        return TileType.Water; //TODO: add Logic to get tiletype. use noise or sth. to get rare tiletypes
+        int miraDeposit = Math.Max(0,_rnd.Next(-10,10))*100;
+        return miraDeposit;
     }
 
 

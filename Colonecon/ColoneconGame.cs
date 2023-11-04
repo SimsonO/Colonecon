@@ -16,7 +16,7 @@ public class ColoneconGame : Game
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
-         _tileManager = new TileManager(new Vector2(10,10));
+         _tileManager = new TileManager(new Point(10,8));
         _gamePlayScreen = new GamePlayScreen(this, _tileManager);
     }
 
@@ -40,7 +40,7 @@ public class ColoneconGame : Game
         // TODO: Add your update logic here
 
         base.Update(gameTime);
-        _gamePlayScreen.Draw(gameTime); 
+        _gamePlayScreen.Update(gameTime); 
     }
 
     protected override void Draw(GameTime gameTime)

@@ -1,19 +1,14 @@
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 public class Tile
 {
-    public TileType Type { get; private set; }
+    public int MiraStartDeposit { get; private set; }
+    public int MiraCurrentDeposit { get; private set; }
 
-    public Tile(TileType type)
+    public Tile(int miraDeposit)
     {
-        Type = type;
+        MiraStartDeposit = miraDeposit;
+        MiraCurrentDeposit = miraDeposit;
     }
-}
-
-public enum TileType
-{
-    Water,
-    Forest,
-    Mountain,
-    Plain
 }
