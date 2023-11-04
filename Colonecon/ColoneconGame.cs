@@ -4,30 +4,32 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Colonecon;
 
-public class Game1 : Game
+public class ColoneconGame : Game
 {
     private GraphicsDeviceManager _graphics;
-    private SpriteBatch _spriteBatch;
+    private TileManager _tileManager;
+    private GamePlayScreen _gamePlayScreen;
 
-    public Game1()
+    public ColoneconGame()
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
+
+         _tileManager = new TileManager(new Vector2(10,10));
+        _gamePlayScreen = new GamePlayScreen(this, _tileManager);
     }
 
     protected override void Initialize()
     {
         // TODO: Add your initialization logic here
-
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
-        _spriteBatch = new SpriteBatch(GraphicsDevice);
-
         // TODO: use this.Content to load your game content here
+        _gamePlayScreen.LoadContent();
     }
 
     protected override void Update(GameTime gameTime)
@@ -38,14 +40,12 @@ public class Game1 : Game
         // TODO: Add your update logic here
 
         base.Update(gameTime);
+        _gamePlayScreen.Draw(gameTime); 
     }
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.CornflowerBlue);
-
-        // TODO: Add your drawing code here
-
         base.Draw(gameTime);
+        _gamePlayScreen.Draw(gameTime);        
     }
 }

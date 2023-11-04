@@ -1,3 +1,3 @@
 ﻿
-using var game = new Colonecon.Game1();
+using var game = new Colonecon.ColoneconGame();
 game.Run();
