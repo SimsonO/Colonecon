@@ -33,7 +33,7 @@ public class TileMapView
 
             //get the colorTint based of MiraDeposit
             
-            float colorIntensity = 1f - 0.35f * (float)Math.Round((float)tile.MiraStartDeposit/1000,1);
+            float colorIntensity = 1f - 0.4f * (float)Math.Round((float)tile.MiraStartDeposit/1000,1);
             Color tileColor = GlobalColorScheme.AdjustIntensity(GlobalColorScheme.TileColor, colorIntensity);            
             // Draw the tile
             _spriteBatch.Draw(_tileTexture, destinationRectangle, tileColor);

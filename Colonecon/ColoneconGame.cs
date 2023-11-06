@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Myra;
 
 namespace Colonecon;
 
@@ -29,6 +30,8 @@ public class ColoneconGame : Game
     protected override void LoadContent()
     {
         // TODO: use this.Content to load your game content here
+         // Initialize Myra
+        MyraEnvironment.Game = this;
         _gamePlayScreen.LoadContent();
     }
 
