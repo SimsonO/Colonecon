@@ -2,13 +2,18 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
-public class TileManager
+public class TileMapManager
 {
     public Point MapSize {get; private set;}
     public Dictionary<Point, Tile> TileMap {get; private set;}
     private Random _rnd;
 
-    public TileManager(Point mapSize)
+    public delegate void BuildingPlacedEventHandler();
+    public static event BuildingPlacedEventHandler OnBuildingPlaced;
+    public delegate void NotEnoughResourcesEventHandler(Building building, Faction faction);
+    public static event NotEnoughResourcesEventHandler OnNotEnoughResources;
+
+    public TileMapManager(Point mapSize)
     {
         MapSize = mapSize;
         TileMap = new Dictionary<Point, Tile>();
@@ -36,6 +41,21 @@ public class TileManager
     {
         int miraDeposit = Math.Max(0,_rnd.Next(-10,10))*100;
         return miraDeposit;
+    }
+
+    public void BuildOnTile(Point tileCoordiante, Building building, Faction faction)
+    {
+        if(faction.SubtractRessources(building.BuildCost))
+        {
+            TileMap[tileCoordiante].OccupyTile(faction);
+            TileMap[tileCoordiante].PlaceBuilding(building);
+            OnBuildingPlaced?.Invoke();
+        }
+        else
+        {
+            OnNotEnoughResources?.Invoke(building, faction);
+        }
+       
     }
 
 

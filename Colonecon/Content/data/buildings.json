@@ -1,0 +1,53 @@
+{
+    "Buildings": [
+        {
+            "Name": "Power Plant",
+            "SpritePath": "sprites/PowerPlant",
+            "ProductionRates": {
+                "Energy": 10
+            },
+            "ConsumptionRates": {},
+            "BuildCost": {
+                "Communium": 5
+            }
+        },
+        {
+            "Name": "Mira Mine",
+            "SpritePath": "sprites/MiraMine",
+            "ProductionRates": {
+                "Mira": 10
+            },
+            "ConsumptionRates": {
+                "Energy": 3
+            },
+            "BuildCost": {
+                "Communium": 10
+            }
+        },
+        {
+            "Name": "Factory",
+            "SpritePath": "sprites/Factory",
+            "ProductionRates": {
+                "Communium": 10
+            },
+            "ConsumptionRates": {
+                "Energy": 2
+            },
+            "BuildCost": {
+                "Communium": 5
+            }
+        },
+        {
+            "Name": "Science Laboratory",
+            "SpritePath": "sprites/ScienceLab",
+            "ProductionRates": {},
+            "ConsumptionRates": {},
+            "BuildCost": {
+                "Communium": 20,
+                "TerraSteel": 5,
+                "Vorixium": 5,
+                "Zytha": 5
+            }
+        }
+    ]
+}

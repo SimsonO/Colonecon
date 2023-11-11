@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Myra;
 
@@ -7,23 +6,25 @@ namespace Colonecon;
 
 public class ColoneconGame : Game
 {
-    private GraphicsDeviceManager _graphics;
-    private TileManager _tileManager;
+    public GraphicsDeviceManager Graphics;
+    private TileMapManager _tileManager;
     private GamePlayScreen _gamePlayScreen;
+
+    public FactionManager FactionManager {get; private set;}
 
     public ColoneconGame()
     {
-        _graphics = new GraphicsDeviceManager(this);
+        Graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
-         _tileManager = new TileManager(new Point(10,8));
+         _tileManager = new TileMapManager(new Point(10,8));
         _gamePlayScreen = new GamePlayScreen(this, _tileManager);
     }
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
+        FactionManager = new FactionManager();
         base.Initialize();
     }
 

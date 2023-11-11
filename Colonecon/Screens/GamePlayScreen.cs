@@ -1,21 +1,19 @@
-using System;
+using Colonecon;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 public class GamePlayScreen
 { 
-    private Game _game;
+    private ColoneconGame _game;
     private SpriteBatch _spriteBatch;
-    private TileManager _tilemanager;
+    private TileMapManager _tilemanager;
     private TileMapView _tileMapView;
     private TestHexfield _testHexfield;   //delete at some point
     private GamePlayUI _gamePlayUI;
-    private BuildOptionHandler _buildOptionHandler;
-    
+    private BuildOptionLoader _buildOptionHandler;
+    private TileMapInputHandler _tileMapInputHandler;
 
-    
-
-    public GamePlayScreen(Game game, TileManager tileManager)
+    public GamePlayScreen(ColoneconGame game, TileMapManager tileManager)
     {
         _tilemanager = tileManager;
         _game = game;
@@ -24,15 +22,19 @@ public class GamePlayScreen
     public void LoadContent()
     {        
         _spriteBatch = new SpriteBatch(_game.GraphicsDevice);
-        _tileMapView = new TileMapView(_spriteBatch, _tilemanager,_game);
-        _testHexfield = new TestHexfield(_game, _tileMapView, _spriteBatch);
-        _buildOptionHandler = new BuildOptionHandler();
+        _buildOptionHandler = new BuildOptionLoader();
+        _tileMapView = new TileMapView(_spriteBatch, _tilemanager,_game, _buildOptionHandler);
+        _testHexfield = new TestHexfield(_game, _tileMapView, _spriteBatch);        
         _gamePlayUI = new GamePlayUI(_game, _buildOptionHandler);
+        _tileMapInputHandler = new TileMapInputHandler(_game, _tileMapView, _tilemanager, _gamePlayUI);
     }
 
     public void Update(GameTime gameTime)
     {
+         // Update the UI library input
+        //_gamePlayView.Update(gameTime);
         _testHexfield.Update(gameTime);
+        _tileMapInputHandler.Update(gameTime);
     }
 
     public void Draw(GameTime gameTime)
@@ -44,9 +46,9 @@ public class GamePlayScreen
        _tileMapView.DrawTileMap(gameTime);
        _testHexfield.DrawHexCoordinates(gameTime);
 
-       _gamePlayUI.Draw(gameTime);
-
         _spriteBatch.End();
+        //Render UI
+        _gamePlayUI.Draw(gameTime);
     }
 
     private void DrawBackground()
