@@ -1,11 +1,8 @@
-using System.Numerics;
-using System.Runtime.CompilerServices;
-
 public class Tile
 {
     public int MiraStartDeposit { get; private set; }
     public int MiraCurrentDeposit { get; private set; }
-    public Faction TileOwner{ get; private set; }
+    public Faction TileOwner { get; private set; }
     public Building Building{ get; private set; }
     public Tile(int miraDeposit)
     {
@@ -15,6 +12,7 @@ public class Tile
 
     public void OccupyTile(Faction faction)
     {
+        faction.FactionTerritory.Add(this);
         TileOwner = faction;
     }
 
@@ -22,4 +20,10 @@ public class Tile
     {
         Building = building;
     }
+
+    public void DestroyBuilding()
+    {
+        Building = null;
+    }
+
 }

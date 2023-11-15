@@ -6,12 +6,18 @@ public abstract class Faction
 {
     public string Name {get; private set;}
     public Color Color {get; private set;}
+    public ResourceType FactionResource {get; private set;}
     public Dictionary<ResourceType, int> RessourceStock {get; private set;}
+    public List<Tile> FactionTerritory;
+    public delegate void ResourcesChangedEventHandler(Faction faction);
+    public static event ResourcesChangedEventHandler OnResourcesChanged;
 
-    protected Faction(string name, Color color)
+    protected Faction(string name, Color color, ResourceType factionResource)
     {
         Name = name;
         Color = color;
+        FactionResource = factionResource;
+        FactionTerritory = new List<Tile>();
         RessourceStock = new Dictionary<ResourceType, int>
         {
             {ResourceType.Mira, 0 },
@@ -28,10 +34,11 @@ public abstract class Faction
         foreach(ResourceType resource in ressourceAmount.Keys)
         {
             RessourceStock[resource] += ressourceAmount[resource];
+            OnResourcesChanged?.Invoke(this);
         }
     }
 
-    public bool SubtractRessources(Dictionary<ResourceType, int> ressourceAmount)
+    public bool SubtractResources(Dictionary<ResourceType, int> ressourceAmount)
     {
         foreach(ResourceType resource in ressourceAmount.Keys)
         {
@@ -43,6 +50,7 @@ public abstract class Faction
         foreach(ResourceType resource in ressourceAmount.Keys)
         {
             RessourceStock[resource] -= ressourceAmount[resource];
+            OnResourcesChanged?.Invoke(this);
         }        
         return true; 
     }
@@ -59,4 +67,31 @@ public abstract class Faction
         }
         return true;
     }
+
+    public void ProduceResources()
+    {
+        foreach(Tile tile in FactionTerritory)
+        {
+            if(tile.Building is not null)
+            { 
+                AddRessources(tile.Building.ProductionRates);
+            }
+        }
+    }
+
+    public void ConsumeResources()
+    {
+        foreach(Tile tile in FactionTerritory)
+        {
+            if(tile.Building is not null)
+            {
+                if(!SubtractResources(tile.Building.ConsumptionRates)) //if faction has not enough resources to support building it gets destroyed
+                {
+                    tile.DestroyBuilding();
+                }
+
+            }
+        }
+    }
+    public abstract void EndTurn();
 }

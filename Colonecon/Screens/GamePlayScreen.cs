@@ -8,6 +8,7 @@ public class GamePlayScreen
     private SpriteBatch _spriteBatch;
     private TileMapManager _tilemanager;
     private TileMapView _tileMapView;
+    private TurnManager _turnManager;
     private TestHexfield _testHexfield;   //delete at some point
     private GamePlayUI _gamePlayUI;
     private BuildOptionLoader _buildOptionHandler;
@@ -24,8 +25,9 @@ public class GamePlayScreen
         _spriteBatch = new SpriteBatch(_game.GraphicsDevice);
         _buildOptionHandler = new BuildOptionLoader();
         _tileMapView = new TileMapView(_spriteBatch, _tilemanager,_game, _buildOptionHandler);
-        _testHexfield = new TestHexfield(_game, _tileMapView, _spriteBatch);        
-        _gamePlayUI = new GamePlayUI(_game, _buildOptionHandler);
+        _testHexfield = new TestHexfield(_game, _tileMapView, _spriteBatch);      
+        _turnManager = new TurnManager(_game.FactionManager);  
+        _gamePlayUI = new GamePlayUI(_game, _buildOptionHandler, _turnManager);
         _tileMapInputHandler = new TileMapInputHandler(_game, _tileMapView, _tilemanager, _gamePlayUI);
     }
 

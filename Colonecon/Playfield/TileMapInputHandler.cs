@@ -35,6 +35,10 @@ public class TileMapInputHandler
                 {
                     _tileMapManager.BuildOnTile(hexCoords, _gamePlayUI.SelectedBuilding, _game.FactionManager.Player);
                 }
+                else
+                {
+                    _gamePlayUI.ClearBuildingSelection();
+                }
             }
 
         }

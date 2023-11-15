@@ -45,17 +45,19 @@ public class TileMapManager
 
     public void BuildOnTile(Point tileCoordiante, Building building, Faction faction)
     {
-        if(faction.SubtractRessources(building.BuildCost))
+        if (TileMap[tileCoordiante].Building is null)
         {
-            TileMap[tileCoordiante].OccupyTile(faction);
-            TileMap[tileCoordiante].PlaceBuilding(building);
-            OnBuildingPlaced?.Invoke();
-        }
-        else
-        {
-            OnNotEnoughResources?.Invoke(building, faction);
-        }
-       
+            if(faction.SubtractResources(building.BuildCost))
+            {
+                TileMap[tileCoordiante].OccupyTile(faction);
+                TileMap[tileCoordiante].PlaceBuilding(building);
+                OnBuildingPlaced?.Invoke();
+            }
+            else
+            {
+                OnNotEnoughResources?.Invoke(building, faction);
+            }
+        }       
     }
 
 

@@ -38,8 +38,6 @@ public class TileMapView
             {
                 DrawBuilding(coordinates, tile);
             }
-
-
         }
     }
 
@@ -94,57 +92,65 @@ public class TileMapView
         
         // Adjust the point by the initial offset
         screenPoint -= _initialOffset;
+        if (screenPoint.X >= 0 && screenPoint.Y >= 0) // check first i click is in TileMap (currently only for top left, becasue on those sides it was buggy)
+        {
+            // Calculate the size of the edges of the hex
+            float hexHeight = _tileHeight * 0.75f ;
+            float hexWidth = _tileWidth;
+            float halfWidth = _tileWidth / 2;
+            float pointHeigt = _tileHeight * 0.25f;
+            float pointGradient = pointHeigt / halfWidth;
+            
+            
+            // Determine the approximate column and row
+            int column;
+            int row = (int)(screenPoint.Y / hexHeight);
+            // Correct for the staggering of the rows
+            bool rowIsOdd = row % 2 == 1;
+            if(rowIsOdd && screenPoint.X >= halfWidth)
+            {
+                column = (int)((screenPoint.X - halfWidth) / hexWidth);
+            }
+            else if(rowIsOdd && screenPoint.X < halfWidth)//no Tile here
+            {
+                column = -1;
+            }
+            else
+            {
+                column = (int)(screenPoint.X / hexWidth);
+            }
 
-        // Calculate the size of the edges of the hex
-        float hexHeight = _tileHeight * 0.75f ;
-        float hexWidth = _tileWidth;
-        float halfWidth = _tileWidth / 2;
-        float pointHeigt = _tileHeight * 0.25f;
-        float pointGradient = pointHeigt / halfWidth;
+            // Work out the position of the point relative to the box it is in
+            double relY = screenPoint.Y - (row * hexHeight);
+            double relX;
 
-        // Determine the approximate column and row
-        int column;
-        int row = (int)(screenPoint.Y / hexHeight);
-        // Correct for the staggering of the rows
-        bool rowIsOdd = row % 2 == 1;
-        if(rowIsOdd)
-        {
-            column = (int)((screenPoint.X - halfWidth) / hexWidth);
-        }
-        else
-        {
-            column = (int)(screenPoint.X / hexWidth);
-        }
-
-        // Work out the position of the point relative to the box it is in
-        double relY = screenPoint.Y - (row * hexHeight);
-        double relX;
-
-        if (rowIsOdd)
-        {
-            relX = screenPoint.X - (column * hexWidth) - halfWidth;
-        }            
-        else
-        {
-            relX = screenPoint.X - (column * hexWidth);
-        }
-        
-        // Work out if the point is above either of the hexagon's top edges
-        if (relY < (-pointGradient * relX) + pointHeigt) // LEFT edge
-        {
-            row--;
-            if (!rowIsOdd)
-                column--;
-        }
-        else if (relY < (pointGradient * relX) - pointHeigt) // RIGHT edge
-        {
-            row--;
             if (rowIsOdd)
-                column++;
+            {
+                relX = screenPoint.X - (column * hexWidth) - halfWidth;
+            }            
+            else
+            {
+                relX = screenPoint.X - (column * hexWidth);
+            }
+            // Work out if the point is above either of the hexagon's top edges
+            if (relY < (-pointGradient * relX) + pointHeigt) // LEFT edge
+            {
+                row--;
+                if (!rowIsOdd)
+                    column--;
+            }
+            else if (relY < (pointGradient * relX) - pointHeigt) // RIGHT edge
+            {
+                row--;
+                if (rowIsOdd)
+                    column++;
+            }
+            return new Point(column, row);
         }
-
-
-        return new Point(column, row);
+        else
+        {
+            return new Point(-1,-1);
+        }
     }  
         
 }
