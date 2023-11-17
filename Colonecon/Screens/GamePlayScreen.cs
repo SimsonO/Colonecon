@@ -6,35 +6,30 @@ public class GamePlayScreen
 { 
     private ColoneconGame _game;
     private SpriteBatch _spriteBatch;
-    private TileMapManager _tilemanager;
     private TileMapView _tileMapView;
     private TurnManager _turnManager;
     private TestHexfield _testHexfield;   //delete at some point
     private GamePlayUI _gamePlayUI;
-    private BuildOptionLoader _buildOptionHandler;
     private TileMapInputHandler _tileMapInputHandler;
 
-    public GamePlayScreen(ColoneconGame game, TileMapManager tileManager)
+    public GamePlayScreen(ColoneconGame game)
     {
-        _tilemanager = tileManager;
         _game = game;
     }
 
     public void LoadContent()
     {        
         _spriteBatch = new SpriteBatch(_game.GraphicsDevice);
-        _buildOptionHandler = new BuildOptionLoader();
-        _tileMapView = new TileMapView(_spriteBatch, _tilemanager,_game, _buildOptionHandler);
+        _tileMapView = new TileMapView(_spriteBatch,_game);
         _testHexfield = new TestHexfield(_game, _tileMapView, _spriteBatch);      
         _turnManager = new TurnManager(_game.FactionManager);  
-        _gamePlayUI = new GamePlayUI(_game, _buildOptionHandler, _turnManager);
-        _tileMapInputHandler = new TileMapInputHandler(_game, _tileMapView, _tilemanager, _gamePlayUI);
+        _gamePlayUI = new GamePlayUI(_game, _turnManager);
+        _tileMapInputHandler = new TileMapInputHandler(_game, _tileMapView, _game.TileManager, _gamePlayUI.GamePlayFooter);
     }
 
     public void Update(GameTime gameTime)
     {
          // Update the UI library input
-        //_gamePlayView.Update(gameTime);
         _testHexfield.Update(gameTime);
         _tileMapInputHandler.Update(gameTime);
     }

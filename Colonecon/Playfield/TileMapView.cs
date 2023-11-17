@@ -1,33 +1,43 @@
 using System;
 using System.Collections.Generic;
+using Colonecon;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 public class TileMapView
 {
     private SpriteBatch _spriteBatch;
     private TileMapManager _tileManager;
-
-    private BuildOptionLoader _buildOptionHandler;
     private Texture2D _tileTexture;
+    private Texture2D _tileBorderTexture;
     private Dictionary<Building, Texture2D> _buildingSprites;
     private int _tileWidth = 64; // Replace with your tile's width
     private int _tileHeight = 64; // Replace with your tile's height
     private Point _initialOffset;
 
 
-    public TileMapView(SpriteBatch spriteBatch, TileMapManager tileManager, Game game, BuildOptionLoader buildOptionHandler)
+    public TileMapView(SpriteBatch spriteBatch, ColoneconGame game)
     {
         _spriteBatch = spriteBatch;
-        _tileManager = tileManager;
-        _buildOptionHandler = buildOptionHandler;
+        _tileManager = game.TileManager;
         _tileTexture = game.Content.Load<Texture2D>("sprites/hexTile");
+        _tileBorderTexture = game.Content.Load<Texture2D>("sprites/hexTileBorder");
         _buildingSprites = new Dictionary<Building, Texture2D>();
-        foreach (Building building in buildOptionHandler.BuildOptions)
+        foreach (Building building in game.BuildOptionLoader.BuildOptions)
         {
             Texture2D buildingTexture = game.Content.Load<Texture2D>(building.SpritePath);
             _buildingSprites.Add(building, buildingTexture);
         }
         _initialOffset = GetOffsetToCenterTileMap(game.GraphicsDevice.Viewport.Width, game.GraphicsDevice.Viewport.Height);
+    }
+
+    private Point GetOffsetToCenterTileMap(int screenWidth, int screenHeight)
+    {
+        int totalMapWidth = _tileManager.MapSize.X * _tileWidth ; //Subtrakt one offset because we don't start with tileoffset
+        int totalMapHeight = (int)(_tileManager.MapSize.Y * _tileHeight * 0.75f + 0.25f*_tileHeight);// Additional quarter tile height for the last row
+
+        Point initialOffset = new Point((screenWidth - totalMapWidth) / 2, (screenHeight - totalMapHeight) / 2);
+        return initialOffset;
+        
     }
     public void DrawTileMap(GameTime gameTime)
     {        
@@ -37,6 +47,10 @@ public class TileMapView
             if (tile.Building is not null)
             {
                 DrawBuilding(coordinates, tile);
+            }
+            if (tile.TileOwner is not null)
+            {
+                DrawTileOwnership(coordinates, tile);
             }
         }
     }
@@ -48,12 +62,9 @@ public class TileMapView
             int drawX = coordinates.X * _tileWidth + coordinates.Y % 2 * _tileWidth / 2 + _initialOffset.X ;
             // Offset for Y depends on the column
             int drawY = coordinates.Y * ((int)(_tileHeight * 0.75f)) + _initialOffset.Y;
-
             // Determine the rectangle where the tile texture will be drawn
             Rectangle destinationRectangle = new Rectangle((int)drawX, (int)drawY, _tileWidth, _tileHeight);
-
             //get the colorTint based of MiraDeposit
-            
             float colorIntensity = 1f - 0.4f * (float)Math.Round((float)tile.MiraStartDeposit/1000,1);
             Color tileColor = GlobalColorScheme.AdjustIntensity(GlobalColorScheme.TileColor, colorIntensity);            
             // Draw the tile
@@ -66,25 +77,25 @@ public class TileMapView
         int drawX = coordinates.X * _tileWidth + coordinates.Y % 2 * _tileWidth / 2 + _initialOffset.X ;
         // Offset for Y depends on the column
         int drawY = coordinates.Y * ((int)(_tileHeight * 0.75f)) + _initialOffset.Y;
+        // Determine the rectangle where the tile texture will be drawn
+        Rectangle destinationRectangle = new Rectangle((int)drawX, (int)drawY, _tileWidth, _tileHeight);           
+        // Draw the tile
+        _spriteBatch.Draw(_buildingSprites[tile.Building], destinationRectangle, tile.TileOwner.Color);
+    }
 
+    private void DrawTileOwnership(Point coordinates, Tile tile)
+    {
+        // Calculate the position to draw the tile on the screen
+        // Offset for X depends on the row we're drawing
+        int drawX = coordinates.X * _tileWidth + coordinates.Y % 2 * _tileWidth / 2 + _initialOffset.X ;
+        // Offset for Y depends on the column
+        int drawY = coordinates.Y * ((int)(_tileHeight * 0.75f)) + _initialOffset.Y;
         // Determine the rectangle where the tile texture will be drawn
         Rectangle destinationRectangle = new Rectangle((int)drawX, (int)drawY, _tileWidth, _tileHeight);
-
-        //get the colorTint based of MiraDeposit
-        Color buildingColor = tile.TileOwner.Color;            
         // Draw the tile
-        _spriteBatch.Draw(_buildingSprites[tile.Building], destinationRectangle, buildingColor);
+        _spriteBatch.Draw(_tileBorderTexture, destinationRectangle, tile.TileOwner.Color);
     }
 
-    private Point GetOffsetToCenterTileMap(int screenWidth, int screenHeight)
-    {
-        int totalMapWidth = _tileManager.MapSize.X * _tileWidth ; //Subtrakt one offset because we don't start with tileoffset
-        int totalMapHeight = (int)(_tileManager.MapSize.Y * _tileHeight * 0.75f + 0.25f*_tileHeight);// Additional quarter tile height for the last row
-
-        Point initialOffset = new Point((screenWidth - totalMapWidth) / 2, (screenHeight - totalMapHeight) / 2);
-        return initialOffset;
-        
-    }
 
     public Point ScreenToHex(Point screenPoint)
     {

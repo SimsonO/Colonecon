@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.Xna.Framework;
 
 public class NPCFaction : Faction
@@ -8,8 +7,10 @@ public class NPCFaction : Faction
     public int AvailableTradeAmountFactionResource {get; private set;}
     public int TradePrice{get; private set;}
     private int _tradeThreshhold; //Only Resources exceeding the threshhold are up for trade
-    public NPCFaction(string name, Color color, ResourceType factionResource) : base(name, color, factionResource)
+    private NPCAI _ai;
+    public NPCFaction(string name, Color color, ResourceType factionResource, TileMapManager tileMapManager, List<Building> buildingOptions) : base(name, color, factionResource)
     {
+        _ai = new NPCAI(this, tileMapManager, buildingOptions);
     }
 
     private void CalculateTradeAmount()
@@ -41,6 +42,10 @@ public class NPCFaction : Faction
        SubtractResources(ware);       
     }
 
+    public void RunTurn()
+    {
+        _ai.TakeNPCaction();
+    }
     public override void EndTurn()
     {
         ProduceResources();

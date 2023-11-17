@@ -43,6 +43,39 @@ public class TileMapManager
         return miraDeposit;
     }
 
+    public List<Tile> GetNeighboringTiles(Point tileCoordiante)
+    {
+        List<Tile> neighbors = new List<Tile>();
+        List<Point> neighborCoordinates = new List<Point>();
+        
+        int column = tileCoordiante.X;
+        int row = tileCoordiante.Y;
+        // Check if the row is even or odd
+        bool isEvenRow = row % 2 == 0;
+
+        // North-East
+        neighborCoordinates.Add(new Point(isEvenRow ? column: column + 1, row - 1));
+        // East
+        neighborCoordinates.Add(new Point(column + 1, row));
+        // South-East
+        neighborCoordinates.Add(new Point(isEvenRow ? column : column + 1, row + 1));
+        // South-West
+        neighborCoordinates.Add(new Point(isEvenRow ? column - 1 : column, row + 1));
+        // West
+        neighborCoordinates.Add(new Point(column - 1, row));
+        // North-West
+        neighborCoordinates.Add(new Point(isEvenRow ? column - 1 : column, row - 1));
+        
+        foreach(Point coordinate in neighborCoordinates)
+        {
+            if(TileMap.ContainsKey(coordinate))
+            {
+                neighbors.Add(TileMap[coordinate]);
+            }
+        }
+        return neighbors;
+    }
+
     public void BuildOnTile(Point tileCoordiante, Building building, Faction faction)
     {
         if (TileMap[tileCoordiante].Building is null)
@@ -50,7 +83,8 @@ public class TileMapManager
             if(faction.SubtractResources(building.BuildCost))
             {
                 TileMap[tileCoordiante].OccupyTile(faction);
-                TileMap[tileCoordiante].PlaceBuilding(building);
+                TileMap[tileCoordiante].PlaceBuilding(building);                
+                OccupyNeighbours(tileCoordiante, faction);
                 OnBuildingPlaced?.Invoke();
             }
             else
@@ -60,5 +94,15 @@ public class TileMapManager
         }       
     }
 
-
+    private void OccupyNeighbours(Point tileCoordiante, Faction faction)
+    {
+        List<Tile> neighbours = GetNeighboringTiles(tileCoordiante);
+        foreach(Tile tile in neighbours)
+        {
+            if(tile.TileOwner is null)
+            {
+                tile.OccupyTile(faction);
+            }
+        }
+    }
 }

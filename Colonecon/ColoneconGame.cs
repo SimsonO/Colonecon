@@ -7,7 +7,9 @@ namespace Colonecon;
 public class ColoneconGame : Game
 {
     public GraphicsDeviceManager Graphics;
-    private TileMapManager _tileManager;
+    public TileMapManager TileManager {get; private set;}
+    
+    public BuildOptionLoader BuildOptionLoader{get; private set;}
     private GamePlayScreen _gamePlayScreen;
 
     public FactionManager FactionManager {get; private set;}
@@ -18,13 +20,15 @@ public class ColoneconGame : Game
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
-         _tileManager = new TileMapManager(new Point(10,8));
-        _gamePlayScreen = new GamePlayScreen(this, _tileManager);
+        TileManager = new TileMapManager(new Point(10,8));
+        BuildOptionLoader = new BuildOptionLoader();
+        FactionManager = new FactionManager(this);
+        _gamePlayScreen = new GamePlayScreen(this);
     }
 
     protected override void Initialize()
     {
-        FactionManager = new FactionManager();
+       
         base.Initialize();
     }
 

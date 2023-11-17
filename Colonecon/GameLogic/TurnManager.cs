@@ -35,15 +35,14 @@ public class TurnManager
     private void RunNPCTurn(int index)
     {
         NPCFaction faction = _factionManager.NPCFactions[index];
-        //add AI here
-        faction.EndTurn();
+        faction.RunTurn();
         if(index + 1 < _factionManager.NPCFactions.Count)
         {
             RunNPCTurn(index + 1);
         }
         else
         {
-            
+            //addLogic to let Player play again
         }
     }
 
