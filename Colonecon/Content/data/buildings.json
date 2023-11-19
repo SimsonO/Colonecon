@@ -49,14 +49,6 @@
                 "Vorixium": 5,
                 "Zytha": 5
             }
-        },
-        {
-            "Name": "Landing Base",
-            "SpritePath": "sprites/Rocket",
-            "BuildLimit": 1,
-            "ProductionRates": {},
-            "ConsumptionRates": {},
-            "BuildCost": {}
         }
     ]
 }

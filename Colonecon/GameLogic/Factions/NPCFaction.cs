@@ -8,10 +8,24 @@ public class NPCFaction : Faction
     public int TradePrice{get; private set;}
     private int _tradeThreshhold; //Only Resources exceeding the threshhold are up for trade
     private NPCAI _ai;
-    public NPCFaction(string name, Color color, ResourceType factionResource, TileMapManager tileMapManager, List<Building> buildingOptions) : base(name, color, factionResource)
+    private Building _landingbase;
+    private TileMapManager _tileMapManager;
+    public NPCFaction(string name, Color color, ResourceType factionResource, TileMapManager tileMapManager, BuildOptionLoader buildOptionLoader) : base(name, color, factionResource)
     {
-        _ai = new NPCAI(this, tileMapManager, buildingOptions);
+        _ai = new NPCAI(this, tileMapManager, buildOptionLoader.BuildOptions);
+        _tileMapManager = tileMapManager;
+        _landingbase = buildOptionLoader.StartingBase;
+
+        TileMapManager.OnPlayerLandingBasePlaced += PlaceLandingBase; //The first building is always the starting base. After that each npc builds it startingBase
+        
     }
+
+    private void PlaceLandingBase()
+    {
+        TileMapManager.OnPlayerLandingBasePlaced -= PlaceLandingBase;
+        Point landingCoordinates = _tileMapManager.GetStartingCoordinatesNPC();
+        _tileMapManager.BuildOnTile(landingCoordinates,_landingbase,this);
+    }  
 
     private void CalculateTradeAmount()
     {

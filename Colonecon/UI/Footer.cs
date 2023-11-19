@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
+using System.Reflection.PortableExecutable;
 using Colonecon;
 using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D;
@@ -16,15 +18,24 @@ public class Footer
     private TurnManager _turnManager;
     public Building SelectedBuilding {get; private set;}
     private List<Building> _buildOptions;
+    private List<Building> _startingBuilding;
+    private HorizontalStackPanel _buildOptionPanel;
     private Dictionary<Building, Button> _buildingButtons = new Dictionary<Building, Button>(); 
     public Footer(ColoneconGame game, GamePlayUI ui, TurnManager turnManager)
     {
         _game = game;
         _buildOptions = game.BuildOptionLoader.BuildOptions;
+        
+        _startingBuilding = new List<Building>
+        {
+            game.BuildOptionLoader.StartingBase
+        };
+        SelectedBuilding = game.BuildOptionLoader.StartingBase;
+
         _ui = ui;
         _turnManager = turnManager;
 
-        TileMapManager.OnBuildingPlaced += ClearBuildingSelection;
+        TileMapManager.OnPlayerLandingBasePlaced += FillBuildingSection;
         TileMapManager.OnNotEnoughResources += InformAboutMissingRessources;
     }
     public HorizontalStackPanel CreateFooter()
@@ -32,7 +43,7 @@ public class Footer
         HorizontalStackPanel footer = new HorizontalStackPanel
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Bottom,
+            VerticalAlignment = VerticalAlignment.Bottom
         };
         Button endTurnButton = new Button
         {
@@ -56,21 +67,24 @@ public class Footer
             HorizontalAlignment = HorizontalAlignment.Right
         };
         openTradeMenu.TouchDown += (s,a) => _ui.TradeMenu.OpenTradeMenu();
-        footer.Widgets.Add(CreateBuildingOptions());
-        footer.Widgets.Add(openTradeMenu);
-        footer.Widgets.Add(endTurnButton);
-        return footer;
-    }
-     private HorizontalStackPanel CreateBuildingOptions()
-    {
-        var buildingOptions = new HorizontalStackPanel
+
+        _buildOptionPanel = new HorizontalStackPanel()
         {
             Spacing = 16,
             HorizontalAlignment = HorizontalAlignment.Center,
             Background = new SolidBrush(GlobalColorScheme.BackgroundColor)
         };
-
-        foreach (Building building in _buildOptions)
+        FillBuildingOptions(_startingBuilding);
+        footer.Widgets.Add(_buildOptionPanel);
+        footer.Widgets.Add(openTradeMenu);
+        footer.Widgets.Add(endTurnButton);
+        return footer;
+    }
+    private void FillBuildingOptions(List<Building> buildOptions)
+    {
+        _buildOptionPanel.Widgets.Clear();
+        _buildingButtons.Clear();
+        foreach (Building building in buildOptions)
         {
             HorizontalStackPanel buildingContainer = new HorizontalStackPanel
             {
@@ -92,7 +106,7 @@ public class Footer
                 Content = buildingSprite,
                 Background = null,
                 OverBackground = null,
-                VerticalAlignment = VerticalAlignment.Center,                
+                VerticalAlignment = VerticalAlignment.Center,
                 BorderThickness = new Thickness(4, 4)
             };
             _buildingButtons.Add(building, button);
@@ -101,12 +115,12 @@ public class Footer
             button.MouseEntered += (s, Building) => _ui.GamePlayDashboard.ShowBuildingInfo(building);
             button.MouseLeft += (s, a) => _ui.GamePlayDashboard.HideBuildingInfo();
 
-          
+
             var buildingCost = new HorizontalStackPanel
             {
                 VerticalAlignment = VerticalAlignment.Top,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-                Spacing = 16            
+                Spacing = 16
             };
             var buildingCostColumn1 = new VerticalStackPanel
             {
@@ -119,43 +133,55 @@ public class Footer
                 HorizontalAlignment = HorizontalAlignment.Stretch
             };
             int i = 0;
-            foreach(ResourceType resource in building.BuildCost.Keys)
-            {         
-                HorizontalStackPanel resourceCost = new HorizontalStackPanel();
-                String spritePath = "sprites/" + resource;
-                Texture2D textureRes = _game.Content.Load<Texture2D>(spritePath);
-                Image resourceSprite = new Image()
+            if(building.BuildCost is not null)
+            {
+                foreach (ResourceType resource in building.BuildCost.Keys)
                 {
-                    Width = 16,
-                    Height = 16,
-                    Color = GlobalColorScheme.PrimaryColor,
-                    Renderable = new TextureRegion(textureRes),
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                };
-                Label resourceAmount = new Label
-                {
-                    Text = building.BuildCost[resource].ToString()
-                };
-                resourceCost.Widgets.Add(resourceSprite);
-                resourceCost.Widgets.Add(resourceAmount);
-                if(i%2 == 0)
-                {
-                    buildingCostColumn1.Widgets.Add(resourceCost);
+                    HorizontalStackPanel resourceCost = new HorizontalStackPanel();
+                    String spritePath = "sprites/" + resource;
+                    Texture2D textureRes = _game.Content.Load<Texture2D>(spritePath);
+                    Image resourceSprite = new Image()
+                    {
+                        Width = 16,
+                        Height = 16,
+                        Color = GlobalColorScheme.PrimaryColor,
+                        Renderable = new TextureRegion(textureRes),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                    };
+                    Label resourceAmount = new Label
+                    {
+                        Text = building.BuildCost[resource].ToString()
+                    };
+                    resourceCost.Widgets.Add(resourceSprite);
+                    resourceCost.Widgets.Add(resourceAmount);
+                    if (i % 2 == 0)
+                    {
+                        buildingCostColumn1.Widgets.Add(resourceCost);
+                    }
+                    else
+                    {
+                        buildingCostColumn2.Widgets.Add(resourceCost);
+                    }
+                    i++;
                 }
-                else
-                {
-                    buildingCostColumn2.Widgets.Add(resourceCost);
-                }
-                i++; 
             }
+            
             buildingCost.Widgets.Add(buildingCostColumn1);
             buildingCost.Widgets.Add(buildingCostColumn2);
             buildingContainer.Widgets.Add(buildingCost);
-            buildingOptions.Widgets.Add(buildingContainer);
+            _buildOptionPanel.Widgets.Add(buildingContainer);
         }
-        return buildingOptions;
     }
+
+    private void FillBuildingSection()
+    {
+        TileMapManager.OnPlayerLandingBasePlaced -= FillBuildingSection;
+        TileMapManager.OnBuildingPlaced += ClearBuildingSelection;
+        FillBuildingOptions(_buildOptions);
+        ClearBuildingSelection();
+    }
+
     private void SetSelectedBuilding(Building building)
     {
         ClearBuildingSelection();

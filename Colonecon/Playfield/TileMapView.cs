@@ -27,6 +27,7 @@ public class TileMapView
             Texture2D buildingTexture = game.Content.Load<Texture2D>(building.SpritePath);
             _buildingSprites.Add(building, buildingTexture);
         }
+        _buildingSprites.Add(game.BuildOptionLoader.StartingBase, game.Content.Load<Texture2D>(game.BuildOptionLoader.StartingBase.SpritePath));
         _initialOffset = GetOffsetToCenterTileMap(game.GraphicsDevice.Viewport.Width, game.GraphicsDevice.Viewport.Height);
     }
 

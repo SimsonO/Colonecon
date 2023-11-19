@@ -30,6 +30,7 @@ public class Dashboard
         {
             HorizontalAlignment = HorizontalAlignment.Right,
             VerticalAlignment = VerticalAlignment.Top,
+            Visible = false,
             Margin = new Thickness(16, 64)
         };
         dashbord.Widgets.Add(CreateResourceDisplay());

@@ -27,10 +27,10 @@ public class TileMapInputHandler
         // Check if the left mouse button was newly clicked
         if (currentMouseState.LeftButton == ButtonState.Pressed && _previousMouseState.LeftButton == ButtonState.Released)
         {
-            // Convert the mouse position to hex coordinates
-            Point hexCoords = _tileMapView.ScreenToHex(new Point(currentMouseState.X, currentMouseState.Y));
             if(_uiFooter.SelectedBuilding is not null)
             {
+                // Convert the mouse position to hex coordinates
+                Point hexCoords = _tileMapView.ScreenToHex(new Point(currentMouseState.X, currentMouseState.Y));
                 if(_tileMapManager.TileMap.Keys.Contains<Point>(hexCoords)) 
                 {
                     _tileMapManager.BuildOnTile(hexCoords, _uiFooter.SelectedBuilding, _game.FactionManager.Player);

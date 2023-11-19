@@ -18,7 +18,8 @@ public class Header
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Top,
-            Height = 64 // Set the height of the header
+            Height = 64, // Set the height of the header
+            Visible = false
         };
         _turnCounter = new Label
         {

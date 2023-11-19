@@ -74,7 +74,10 @@ public abstract class Faction
         {
             if(tile.Building is not null)
             { 
-                AddRessources(tile.Building.ProductionRates);
+                if(tile.Building.ProductionRates is not null)
+                {
+                    AddRessources(tile.Building.ProductionRates);
+                }                
             }
         }
     }
@@ -85,11 +88,13 @@ public abstract class Faction
         {
             if(tile.Building is not null)
             {
-                if(!SubtractResources(tile.Building.ConsumptionRates)) //if faction has not enough resources to support building it gets destroyed
+                if(tile.Building.ConsumptionRates is not null)
                 {
-                    tile.DestroyBuilding();
-                }
-
+                    if(!SubtractResources(tile.Building.ConsumptionRates)) //if faction has not enough resources to support building it gets destroyed
+                    {
+                        tile.DestroyBuilding();
+                    }
+                }          
             }
         }
     }

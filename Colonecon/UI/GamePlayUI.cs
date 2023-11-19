@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Colonecon;
 using Microsoft.Xna.Framework;
-
+using Myra.Graphics2D;
 using Myra.Graphics2D.UI;
 
 public class GamePlayUI
@@ -34,10 +34,20 @@ public class GamePlayUI
         VerticalStackPanel dashbord = GamePlayDashboard.CreateDashboard();
         HorizontalStackPanel footer = GamePlayFooter.CreateFooter();
 
+        Label startingMessage = new Label
+        {
+            Text = "Choose your landing spot!",
+            VerticalAlignment = VerticalAlignment.Top,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Padding = new Thickness(0,16),
+        };
+
+        _desktop.Widgets.Add(startingMessage);
         _desktop.Widgets.Add(header);
         _desktop.Widgets.Add(dashbord);
         _desktop.Widgets.Add(TradeMenu.TradeMenuPanel);
         _desktop.Widgets.Add(footer);
+
     }
 
     public void Draw(GameTime gameTime)

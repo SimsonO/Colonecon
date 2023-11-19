@@ -7,10 +7,12 @@ using System.Text.Json.Serialization;
 
 public class BuildOptionLoader
 {
-    public List<Building> BuildOptions {get; private set;}    
+    public List<Building> BuildOptions {get; private set;}
+    public Building StartingBase {get; private set;}
     public BuildOptionLoader ()
     {
         BuildOptions = LoadBuildingData();
+        StartingBase = LoadStartingBase();
     }
 
     private List<Building> LoadBuildingData()
@@ -19,4 +21,20 @@ public class BuildOptionLoader
         BuildingOptions buildingOptions = JsonSerializer.Deserialize<BuildingOptions>(json);
         return buildingOptions.Buildings;
     }
+    private Building LoadStartingBase()
+    {
+        Building LandingBase = new Building
+        {
+            Name = "LandingBase",
+            SpritePath = "sprites/Rocket",
+            BuildLimit = 1,
+            BuildCost = {},
+            ConsumptionRates = {},
+            ProductionRates = {}
+        };
+        return LandingBase;
+    }
+
+
+
 }
