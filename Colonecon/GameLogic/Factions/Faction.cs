@@ -8,7 +8,9 @@ public abstract class Faction
     public Color Color {get; private set;}
     public ResourceType FactionResource {get; private set;}
     public Dictionary<ResourceType, int> RessourceStock {get; private set;}
-    public List<Tile> FactionTerritory;
+    public Dictionary<ResourceType, int> ResourceConsume {get; private set;}
+    public Dictionary<ResourceType, int> ResourceProduce {get; private set;}
+    public List<Tile> Territory;
     public delegate void ResourcesChangedEventHandler(Faction faction);
     public static event ResourcesChangedEventHandler OnResourcesChanged;
 
@@ -17,7 +19,7 @@ public abstract class Faction
         Name = name;
         Color = color;
         FactionResource = factionResource;
-        FactionTerritory = new List<Tile>();
+        Territory = new List<Tile>();
         RessourceStock = new Dictionary<ResourceType, int>
         {
             {ResourceType.Mira, 0 },
@@ -27,6 +29,11 @@ public abstract class Faction
             {ResourceType.Vorixium, 0},
             {ResourceType.Zytha, 0}
         };
+        ResourceConsume = new Dictionary<ResourceType, int>();
+        ResourceProduce = new Dictionary<ResourceType, int>();
+
+        TileMapManager.OnBuildingPlaced += UpdateProduce;
+        TileMapManager.OnBuildingPlaced += UpdateConsume;
     }
 
     public void AddRessources(Dictionary<ResourceType, int> ressourceAmount)
@@ -70,13 +77,18 @@ public abstract class Faction
 
     public void ProduceResources()
     {
-        foreach(Tile tile in FactionTerritory)
+        foreach(Tile tile in Territory)
         {
             if(tile.Building is not null)
             { 
                 if(tile.Building.ProductionRates is not null)
                 {
-                    AddRessources(tile.Building.ProductionRates);
+                    Dictionary<ResourceType, int> producedResources = tile.Building.ProductionRates;
+                    if(producedResources.ContainsKey(ResourceType.Mira))
+                    {
+                       producedResources[ResourceType.Mira] = tile.MineMira(producedResources[ResourceType.Mira]);
+                    }
+                    AddRessources(producedResources);
                 }                
             }
         }
@@ -84,7 +96,7 @@ public abstract class Faction
 
     public void ConsumeResources()
     {
-        foreach(Tile tile in FactionTerritory)
+        foreach(Tile tile in Territory)
         {
             if(tile.Building is not null)
             {
@@ -93,6 +105,53 @@ public abstract class Faction
                     if(!SubtractResources(tile.Building.ConsumptionRates)) //if faction has not enough resources to support building it gets destroyed
                     {
                         tile.DestroyBuilding();
+                    }
+                }          
+            }
+        }
+    }
+
+    private void UpdateConsume()
+    {
+        foreach(Tile tile in Territory)
+        {
+            if(tile.Building is not null)
+            {
+                if(tile.Building.ConsumptionRates is not null)
+                {
+                    foreach(ResourceType resource in tile.Building.ConsumptionRates.Keys)
+                    {
+                        if(ResourceConsume.ContainsKey(resource))
+                        {
+                            ResourceConsume[resource] += tile.Building.ConsumptionRates[resource];
+                        } 
+                        else
+                        {
+                            ResourceConsume.Add(resource, tile.Building.ConsumptionRates[resource]);
+                        }
+                    }
+                }          
+            }
+        }
+    }
+    private void UpdateProduce()
+    {
+        foreach(Tile tile in Territory)
+        {
+            if(tile.Building is not null)
+            {
+                if(tile.Building.ProductionRates is not null)
+                {
+                    foreach(ResourceType resource in tile.Building.ProductionRates.Keys)
+                    {
+                        if(ResourceProduce.ContainsKey(resource))
+                        {
+                            ResourceProduce[resource] += tile.Building.ProductionRates[resource];
+                        } 
+                        else
+                        {
+                            ResourceProduce.Add(resource, tile.Building.ProductionRates[resource]);
+                        }
                     }
                 }          
             }

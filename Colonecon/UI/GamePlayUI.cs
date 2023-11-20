@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Colonecon;
 using Microsoft.Xna.Framework;
@@ -13,6 +14,7 @@ public class GamePlayUI
     public Dashboard GamePlayDashboard;
     public Footer GamePlayFooter;
     public TradeMenu TradeMenu;
+    private Label _startingMessage;
 
     
     public GamePlayUI(ColoneconGame game, TurnManager turnManager)
@@ -22,32 +24,36 @@ public class GamePlayUI
         GamePlayFooter = new Footer(game,this, turnManager);
         _gamePlayHeader = new Header(turnManager);
         TradeMenu = new TradeMenu(_game.FactionManager, this);
-        LoadContent();
-    }
-    public void LoadContent()
-    {
-        // Create the desktop that will hold your UI
+        
         _desktop = new Desktop();
-       
-
         Panel header = _gamePlayHeader.CreateHeader();
         VerticalStackPanel dashbord = GamePlayDashboard.CreateDashboard();
         HorizontalStackPanel footer = GamePlayFooter.CreateFooter();
+        CreateStartingMethod();
 
-        Label startingMessage = new Label
-        {
-            Text = "Choose your landing spot!",
-            VerticalAlignment = VerticalAlignment.Top,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Padding = new Thickness(0,16),
-        };
-
-        _desktop.Widgets.Add(startingMessage);
+        _desktop.Widgets.Add(_startingMessage);
         _desktop.Widgets.Add(header);
         _desktop.Widgets.Add(dashbord);
         _desktop.Widgets.Add(TradeMenu.TradeMenuPanel);
         _desktop.Widgets.Add(footer);
 
+        TileMapManager.OnPlayerLandingBasePlaced += HideStartingMessage;
+    }
+    private void CreateStartingMethod()
+    {
+        _startingMessage = new Label
+        {
+            Text = "Choose your landing spot!",
+            VerticalAlignment = VerticalAlignment.Top,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Padding = new Thickness(0, 16),
+        };
+    }
+
+    private void HideStartingMessage()
+    {
+        _startingMessage.Visible = false;
+        TileMapManager.OnPlayerLandingBasePlaced -= HideStartingMessage;
     }
 
     public void Draw(GameTime gameTime)

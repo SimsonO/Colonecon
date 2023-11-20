@@ -9,6 +9,7 @@ using Myra.Graphics2D.UI;
 public class Dashboard
 {
     private Dictionary<ResourceType, Label> _playerResourceDisplay;
+    private VerticalStackPanel _dashboard;
     private Panel _buildingInformationPanel;
     private Panel _tileInformationPanel;
     private Panel _messagePanel;
@@ -22,20 +23,21 @@ public class Dashboard
         _playerResourceDisplay = new Dictionary<ResourceType, Label>();
 
         Faction.OnResourcesChanged += UpdatePlayerResources;
+        TileMapManager.OnPlayerLandingBasePlaced += ShowDashboard;
     }
     
     public VerticalStackPanel CreateDashboard()
     {
-        var dashbord = new VerticalStackPanel
+        _dashboard = new VerticalStackPanel
         {
             HorizontalAlignment = HorizontalAlignment.Right,
             VerticalAlignment = VerticalAlignment.Top,
             Visible = false,
             Margin = new Thickness(16, 64)
         };
-        dashbord.Widgets.Add(CreateResourceDisplay());
-        dashbord.Widgets.Add(CreateInfoContainer());
-        return dashbord;
+        _dashboard.Widgets.Add(CreateResourceDisplay());
+        _dashboard.Widgets.Add(CreateInfoContainer());
+        return _dashboard;
     }
 
     private Panel CreateInfoContainer()
@@ -168,5 +170,11 @@ public class Dashboard
         _buildingInformationPanel.Visible = false;
         _messagePanel.Visible = false;
         _tileInformationPanel.Visible = false;
+    }
+
+    private void ShowDashboard()
+    {
+        _dashboard.Visible = true;
+        TileMapManager.OnPlayerLandingBasePlaced -= ShowDashboard;
     }
 }

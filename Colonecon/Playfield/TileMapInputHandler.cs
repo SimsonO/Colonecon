@@ -31,7 +31,7 @@ public class TileMapInputHandler
             {
                 // Convert the mouse position to hex coordinates
                 Point hexCoords = _tileMapView.ScreenToHex(new Point(currentMouseState.X, currentMouseState.Y));
-                if(_tileMapManager.TileMap.Keys.Contains<Point>(hexCoords)) 
+                if(_tileMapManager.TileMapByCoordinates.Keys.Contains<Point>(hexCoords)) 
                 {
                     _tileMapManager.BuildOnTile(hexCoords, _uiFooter.SelectedBuilding, _game.FactionManager.Player);
                 }

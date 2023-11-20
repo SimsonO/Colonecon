@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Audio;
 
@@ -34,9 +35,10 @@ public class ActionEvaluator
 
     private void EvaluateBuildAction(NPCBuildingAction action)
     {
-        // Specific logic to evaluate a building action
-        action.Value = 10 + _rnd.Next(-10,100);
+        int value = 0;
+        action.Value = value;
     }
+
 
     private void EvaluateTradeAction(INPCTradingAction action)
     {

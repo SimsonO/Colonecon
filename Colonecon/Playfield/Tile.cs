@@ -1,3 +1,6 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+
 public class Tile
 {
     public int MiraStartDeposit { get; private set; }
@@ -12,7 +15,7 @@ public class Tile
 
     public void OccupyTile(Faction faction)
     {
-        faction.FactionTerritory.Add(this);
+        faction.Territory.Add(this);
         TileOwner = faction;
     }
 
@@ -24,6 +27,13 @@ public class Tile
     public void DestroyBuilding()
     {
         Building = null;
+    }
+
+    public int MineMira(int produceRate)
+    {
+        int actualProduceRate = Math.Min(MiraCurrentDeposit, produceRate);
+        MiraCurrentDeposit -=actualProduceRate;
+        return actualProduceRate;
     }
 
 }

@@ -6,7 +6,8 @@ using Microsoft.Xna.Framework;
 public class TileMapManager
 {
     public Point MapSize {get; private set;}
-    public Dictionary<Point, Tile> TileMap {get; private set;}
+    public Dictionary<Point, Tile> TileMapByCoordinates {get; private set;}
+    public Dictionary<Tile, Point> TileMapByTiles {get; private set;}
     private Random _rnd;
 
     public delegate void BuildingPlacedEventHandler();
@@ -19,14 +20,15 @@ public class TileMapManager
     public TileMapManager(Point mapSize)
     {
         MapSize = mapSize;
-        TileMap = new Dictionary<Point, Tile>();
+        TileMapByCoordinates = new Dictionary<Point, Tile>();
+        TileMapByTiles = new Dictionary<Tile, Point>();
         _rnd = new Random();
         GenerateTileMap();
     }
 
     public void GenerateTileMap()
     {
-        TileMap.Clear();
+        TileMapByCoordinates.Clear();
         for (int i = 0; i < MapSize.Y;i++)
         {
             //for odd rows we want 1 tile more then for even
@@ -34,7 +36,8 @@ public class TileMapManager
             {
                 Point coordinates = new Point(j,i);
                 Tile tile = new Tile( GetRandomMiraDeposit());
-                TileMap.Add(coordinates, tile);
+                TileMapByCoordinates.Add(coordinates, tile);
+                TileMapByTiles.Add(tile, coordinates);
             }
         }
 
@@ -70,25 +73,30 @@ public class TileMapManager
 
     public void BuildOnTile(Point tileCoordiante, Building building, Faction faction)
     {
-        if (TileMap[tileCoordiante].Building is null)
+        BuildOnTile(TileMapByCoordinates[tileCoordiante], building, faction);
+    }
+
+    public void BuildOnTile(Tile tile, Building building, Faction faction)
+    {
+        if (tile.Building is null)
         {
             if(building.BuildCost is null) // can only be the Landingbase and i know this is hacky
             {
-                TileMap[tileCoordiante].OccupyTile(faction);
-                TileMap[tileCoordiante].PlaceBuilding(building);                
-                OccupyNeighbours(tileCoordiante, faction);
+                tile.OccupyTile(faction);
+                tile.PlaceBuilding(building);                
+                OccupyNeighbours(TileMapByTiles[tile], faction);
                 if(faction is Player)
                 {
                     OnPlayerLandingBasePlaced?.Invoke();
                 }                
             }
-            else if (TileMap[tileCoordiante].TileOwner == faction)
+            else if (tile.TileOwner == faction)
             {
                  if(faction.SubtractResources(building.BuildCost))
                 {
-                    TileMap[tileCoordiante].OccupyTile(faction);
-                    TileMap[tileCoordiante].PlaceBuilding(building);                
-                    OccupyNeighbours(tileCoordiante, faction);
+                    tile.OccupyTile(faction);
+                    tile.PlaceBuilding(building);                
+                    OccupyNeighbours(TileMapByTiles[tile], faction);
                     OnBuildingPlaced?.Invoke();
                 }
                 else
@@ -98,7 +106,7 @@ public class TileMapManager
             }
             else
             {
-                //Invoke no in territory here
+                //Invoke not in territory here
             }
             
         }       
@@ -141,9 +149,9 @@ public class TileMapManager
         
         foreach(Point coordinate in neighborCoordinates)
         {
-            if(TileMap.ContainsKey(coordinate))
+            if(TileMapByCoordinates.ContainsKey(coordinate))
             {
-                neighbors.Add(TileMap[coordinate]);
+                neighbors.Add(TileMapByCoordinates[coordinate]);
             }
         }
         return neighbors;

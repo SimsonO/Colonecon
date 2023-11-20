@@ -6,25 +6,18 @@ public class NPCBuildingAction : INPCAction
     public Faction Faction {get; private set;}
     public Building Building {get; private set;}
     public Tile Tile {get; private set;}
+    private TileMapManager _tileMapManager;
 
-    public NPCBuildingAction(Faction faction, Building building, Tile tile)
+    public NPCBuildingAction(Faction faction, Building building, Tile tile, TileMapManager tileMapManager)
     {
         Faction = faction;
         Building = building;
         Tile = tile;
+        _tileMapManager = tileMapManager;
 
     }
     public void ExecuteAction()
     {
-        PlaceBuilingOnTile();
-    }
-
-    private void PlaceBuilingOnTile()
-    {
-        if(Faction.SubtractResources(Building.BuildCost))
-        {
-            Tile.PlaceBuilding(Building);
-            Tile.OccupyTile(Faction);
-        }
+        _tileMapManager.BuildOnTile(Tile,Building,Faction);
     }
 }

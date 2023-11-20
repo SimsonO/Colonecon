@@ -42,7 +42,7 @@ public class TileMapView
     }
     public void DrawTileMap(GameTime gameTime)
     {        
-        foreach ((Point coordinates, Tile tile) in _tileManager.TileMap)
+        foreach ((Point coordinates, Tile tile) in _tileManager.TileMapByCoordinates)
         {
             DrawTile(coordinates, tile);        
             if (tile.Building is not null)

@@ -1,20 +1,23 @@
+using System;
 using Myra.Graphics2D.UI;
 
 public class Header
 {
     private Label _turnCounter;
+    private Panel _header;
     private TurnManager _turnManager;
 
     public Header(TurnManager turnManager)
     {
         _turnManager = turnManager;
         
-        TurnManager.OnTurnEndedEvent += UpdateTurnCounter;
+        TurnManager.OnTurnEndedEvent += UpdateTurnCounter;        
+        TileMapManager.OnPlayerLandingBasePlaced += ShowHeader;
     }
+
     public Panel CreateHeader()
     {
-
-        var header = new Panel
+        _header = new Panel
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Top,
@@ -37,13 +40,19 @@ public class Header
             },
             HorizontalAlignment = HorizontalAlignment.Right
         };
-        header.Widgets.Add(_turnCounter);
-        header.Widgets.Add(menuButton);
-        return header;
+        _header.Widgets.Add(_turnCounter);
+        _header.Widgets.Add(menuButton);
+        return _header;
     }
     private void UpdateTurnCounter(int newTurnCounter)
     {
         _turnCounter.Text = newTurnCounter+ "/" + _turnManager.MaxTurns;
+    }
+
+    private void ShowHeader()
+    {
+        _header.Visible = true;
+        TileMapManager.OnPlayerLandingBasePlaced -= ShowHeader;
     }
 
 }

@@ -51,11 +51,11 @@ public class NPCAI
         {
             if(_faction.EnoughResources(building))
             {
-                foreach(Tile tile in _tileMapManager.TileMap.Values)
+                foreach(Tile tile in _faction.Territory)
                 {
-                    if(tile.Building is null && (tile.TileOwner is null || tile.TileOwner == _faction))
+                    if(tile.Building is null)
                     {
-                        NPCBuildingAction action = new NPCBuildingAction(_faction, building, tile);
+                        NPCBuildingAction action = new NPCBuildingAction(_faction, building, tile, _tileMapManager);
                         _actionEvaluator.Evaluate(action);
                         buildingActions.Add(action);
                     }
