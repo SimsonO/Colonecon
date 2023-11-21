@@ -2,7 +2,7 @@ using System;
 
 public class NPCBuildingAction : INPCAction
 {
-    public int Value {get; set;}
+    public double Value {get; set;}
     public Faction Faction {get; private set;}
     public Building Building {get; private set;}
     public Tile Tile {get; private set;}
