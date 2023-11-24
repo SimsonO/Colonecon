@@ -14,6 +14,13 @@ public class TurnManager
         TurnCounter = 0;
         MaxTurns = 20;
         _factionManager = factionManager;
+
+        Header.OnRestartGame += Reset;
+    }
+
+    public void Reset()
+    {
+        TurnCounter = 0;
     }
 
     public void EndPlayerTurn()
@@ -52,5 +59,4 @@ public class TurnManager
         //Calculate Highscore
         //Show Endscreen or send Endgame Event
     }
-
 }

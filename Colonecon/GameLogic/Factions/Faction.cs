@@ -7,7 +7,10 @@ public abstract class Faction
     public string Name {get; private set;}
     public Color Color {get; private set;}
     public ResourceType FactionResource {get; private set;}
-    public Dictionary<ResourceType, int> RessourceStock {get; private set;}
+    public int AvailableTradeAmountFactionResource;
+    public int TradePrice;
+    public int FactionResourcePrice {get; private set;}
+    public Dictionary<ResourceType, int> ResourceStock {get; private set;}
     public Dictionary<ResourceType, int> ResourceConsume {get; private set;}
     public Dictionary<ResourceType, int> ResourceProduce {get; private set;}
     public List<Tile> Territory;
@@ -19,8 +22,9 @@ public abstract class Faction
         Name = name;
         Color = color;
         FactionResource = factionResource;
+        FactionResourcePrice = 5;
         Territory = new List<Tile>();
-        RessourceStock = new Dictionary<ResourceType, int>
+        ResourceStock = new Dictionary<ResourceType, int>
         {
             {ResourceType.Mira, 0 },
             {ResourceType.Energy, 0},
@@ -34,32 +38,66 @@ public abstract class Faction
 
         TileMapManager.OnBuildingPlaced += UpdateProduce;
         TileMapManager.OnBuildingPlaced += UpdateConsume;
+        Header.OnRestartGame += Reset;
+    }
+
+    public void Reset()
+    {
+        Territory = new List<Tile>();
+        ResourceStock = new Dictionary<ResourceType, int>
+        {
+            {ResourceType.Mira, 0 },
+            {ResourceType.Energy, 0},
+            {ResourceType.Communium, 30},
+            {ResourceType.TerraSteel, 0},
+            {ResourceType.Vorixium, 0},
+            {ResourceType.Zytha, 0}
+        };
+        ResourceConsume = new Dictionary<ResourceType, int>();
+        ResourceProduce = new Dictionary<ResourceType, int>();
+        OnResourcesChanged?.Invoke(this);
     }
 
     public void AddRessources(Dictionary<ResourceType, int> ressourceAmount)
     {
         foreach(ResourceType resource in ressourceAmount.Keys)
         {
-            RessourceStock[resource] += ressourceAmount[resource];
-            OnResourcesChanged?.Invoke(this);
+            AddRessources(resource, ressourceAmount[resource]);
         }
+    }
+
+    public void AddRessources(ResourceType resource, int amount)
+    {
+        ResourceStock[resource] += amount;
+        OnResourcesChanged?.Invoke(this);
     }
 
     public bool SubtractResources(Dictionary<ResourceType, int> ressourceAmount)
     {
         foreach(ResourceType resource in ressourceAmount.Keys)
         {
-            if(RessourceStock[resource] < ressourceAmount[resource])
+            if(ResourceStock[resource] < ressourceAmount[resource])
             {
                return false;
             }
         }
         foreach(ResourceType resource in ressourceAmount.Keys)
         {
-            RessourceStock[resource] -= ressourceAmount[resource];
+            ResourceStock[resource] -= ressourceAmount[resource];
             OnResourcesChanged?.Invoke(this);
         }        
         return true; 
+    }
+
+    public bool SubtractResources(ResourceType resource, int amount)
+    {
+        if(ResourceStock[resource] < amount)
+        {
+            return false;
+        }
+        ResourceStock[resource] -= amount;
+        OnResourcesChanged?.Invoke(this);
+        return true;
     }
 
     public bool EnoughResources(Building building)
@@ -67,7 +105,7 @@ public abstract class Faction
         Dictionary<ResourceType, int> buildingCost = building.BuildCost;
         foreach(ResourceType resource in buildingCost.Keys)
         {
-            if(RessourceStock[resource] < buildingCost[resource])
+            if(ResourceStock[resource] < buildingCost[resource])
             {
                return false;
             }
@@ -111,51 +149,108 @@ public abstract class Faction
         }
     }
 
-    private void UpdateConsume()
+    private void UpdateConsume(Faction faction)
     {
-        foreach(Tile tile in Territory)
+        if(faction == this)
         {
-            if(tile.Building is not null)
+            ResourceConsume.Clear();
+            foreach(Tile tile in Territory)
             {
-                if(tile.Building.ConsumptionRates is not null)
+                if(tile.Building is not null)
                 {
-                    foreach(ResourceType resource in tile.Building.ConsumptionRates.Keys)
+                    if(tile.Building.ConsumptionRates is not null)
                     {
-                        if(ResourceConsume.ContainsKey(resource))
+                        foreach(ResourceType resource in tile.Building.ConsumptionRates.Keys)
                         {
-                            ResourceConsume[resource] += tile.Building.ConsumptionRates[resource];
-                        } 
-                        else
-                        {
-                            ResourceConsume.Add(resource, tile.Building.ConsumptionRates[resource]);
+                            if(ResourceConsume.ContainsKey(resource))
+                            {
+                                ResourceConsume[resource] += tile.Building.ConsumptionRates[resource];
+                            } 
+                            else
+                            {
+                                ResourceConsume.Add(resource, tile.Building.ConsumptionRates[resource]);  
+                            }
                         }
-                    }
-                }          
+                    }          
+                }  
             }
+            OnResourcesChanged?.Invoke(this);
         }
+        
     }
-    private void UpdateProduce()
+    private void UpdateProduce(Faction faction)
     {
-        foreach(Tile tile in Territory)
+        if(faction == this)
         {
-            if(tile.Building is not null)
+            ResourceProduce.Clear(); //alternativley could only add produce of new buildin but with this i also account for other changes
+            foreach(Tile tile in Territory)
             {
-                if(tile.Building.ProductionRates is not null)
+                if(tile.Building is not null)
                 {
-                    foreach(ResourceType resource in tile.Building.ProductionRates.Keys)
+                    if(tile.Building.ProductionRates is not null)
                     {
-                        if(ResourceProduce.ContainsKey(resource))
+                        foreach(ResourceType resource in tile.Building.ProductionRates.Keys)
                         {
-                            ResourceProduce[resource] += tile.Building.ProductionRates[resource];
-                        } 
-                        else
-                        {
-                            ResourceProduce.Add(resource, tile.Building.ProductionRates[resource]);
-                        }
-                    }
-                }          
+                            if(ResourceProduce.ContainsKey(resource))
+                            {
+                                ResourceProduce[resource] += tile.Building.ProductionRates[resource]; 
+                            } 
+                            else
+                            {
+                                ResourceProduce.Add(resource, tile.Building.ProductionRates[resource]);   
+                                
+                            }
+                        }                        
+                    }          
+                }
             }
+            OnResourcesChanged?.Invoke(this);
         }
+        
+    }
+
+    public bool TradeFromHome(int amount)
+    {   
+        if(SubtractResources(ResourceType.Mira, amount * FactionResourcePrice))
+        {
+            AddRessources(FactionResource, amount);
+            return true;
+        }
+        return false;
+    }
+
+    public void SellFactionResource(int amount)
+    {
+       Dictionary<ResourceType,int> price = new Dictionary<ResourceType, int>
+       {
+           { ResourceType.Mira, amount * TradePrice}
+       };
+       Dictionary<ResourceType, int> ware = new Dictionary<ResourceType, int>
+       {
+        {FactionResource, amount}
+       };
+       AddRessources(price);
+       SubtractResources(ware);       
+    }
+
+    public bool BuyResources(ResourceType resource, int amount, int unitTradePrice)
+    {
+        Dictionary<ResourceType,int> price = new Dictionary<ResourceType, int>
+        {
+            { ResourceType.Mira, amount * unitTradePrice }
+        };
+        Dictionary<ResourceType, int> ware = new Dictionary<ResourceType, int>
+        {
+            {resource, amount}
+        };
+        
+        bool enoughMira = SubtractResources(price); 
+        if (enoughMira)
+        {
+            AddRessources(ware);
+        }
+        return enoughMira;
+        
     }
     public abstract void EndTurn();
 }

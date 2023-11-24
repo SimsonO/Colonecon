@@ -6,13 +6,15 @@ public class NPCAI
 {
     private NPCFaction _faction;
     private TileMapManager _tileMapManager;
+    private FactionManager _factionManager;
     private List<Building> _buildingOptions;
     private ActionEvaluator _actionEvaluator;
 
-    public NPCAI(NPCFaction faction, TileMapManager tileMapManager, List<Building> buildingOptions)
+    public NPCAI(NPCFaction faction, TileMapManager tileMapManager, List<Building> buildingOptions, FactionManager factionManager)
     {
         _faction = faction;
         _tileMapManager = tileMapManager;
+        _factionManager = factionManager;
         _buildingOptions = buildingOptions;
         _actionEvaluator = new ActionEvaluator();
     }
@@ -68,8 +70,34 @@ public class NPCAI
     private List<INPCAction> GetPossibleTradeActions()
     {
         List<INPCAction> tradingActions = new List<INPCAction>();
+        foreach(Faction faction in _factionManager.NPCFactions)
+        {
+            if(faction == _faction)
+            {
+                if(_faction.ResourceStock[ResourceType.Mira]>=faction.FactionResourcePrice * 5)
+                {
+                    NPCBuyFromHome action = new NPCBuyFromHome(_faction, 5);
+                    _actionEvaluator.Evaluate(action);
+                    tradingActions.Add(action);
+                }
+            }
+            else
+            {
+                if(_faction.ResourceStock[ResourceType.Mira]>=faction.TradePrice * 5 && faction.AvailableTradeAmountFactionResource >= 5)
+                {
+                    NPCTradingAction action = new NPCTradingAction(_faction, 5, faction);
+                    _actionEvaluator.Evaluate(action);
+                    tradingActions.Add(action);
+                }
+            }
+        }
+        if(_faction.ResourceStock[ResourceType.Mira]>=_factionManager.Player.TradePrice * 5 && _factionManager.Player.AvailableTradeAmountFactionResource >= 5)
+                {
+                    NPCTradingAction action = new NPCTradingAction(_faction, 5, _factionManager.Player);
+                    _actionEvaluator.Evaluate(action);
+                    tradingActions.Add(action);
+                }
         return tradingActions;
-
     }
 
     private INPCAction GetHighestValueAction(List<INPCAction> actions)

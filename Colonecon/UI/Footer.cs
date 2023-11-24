@@ -20,6 +20,8 @@ public class Footer
     private List<Building> _buildOptions;
     private List<Building> _startingBuilding;
     private HorizontalStackPanel _buildOptionPanel;
+    private Button _endTurnButton;
+    private Button _tradeMenuButton;
     private Dictionary<Building, Button> _buildingButtons = new Dictionary<Building, Button>(); 
     public Footer(ColoneconGame game, GamePlayUI ui, TurnManager turnManager)
     {
@@ -36,8 +38,20 @@ public class Footer
         _turnManager = turnManager;
 
         TileMapManager.OnPlayerLandingBasePlaced += FillBuildingSection;
+        TileMapManager.OnPlayerLandingBasePlaced += ShowButtons;
         TileMapManager.OnNotEnoughResources += InformAboutMissingRessources;
+        Header.OnRestartGame += Reset;
     }
+
+    public void Reset()
+    {
+        SelectedBuilding = _game.BuildOptionLoader.StartingBase;
+        FillBuildingOptions(_startingBuilding);
+        HideButtons();
+        TileMapManager.OnPlayerLandingBasePlaced += FillBuildingSection;
+        TileMapManager.OnBuildingPlaced -= ClearBuildingSelection;
+    }
+
     public HorizontalStackPanel CreateFooter()
     {
         HorizontalStackPanel footer = new HorizontalStackPanel
@@ -45,7 +59,7 @@ public class Footer
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Bottom
         };
-        Button endTurnButton = new Button
+        _endTurnButton = new Button
         {
             Content = new Label
             {
@@ -53,20 +67,22 @@ public class Footer
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Center
             },
-            HorizontalAlignment = HorizontalAlignment.Right
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Visible = false
         };
-        endTurnButton.TouchDown += (s, a) => _turnManager.EndPlayerTurn();
-        Button openTradeMenu = new Button
+        _endTurnButton.TouchDown += (s, a) => _turnManager.EndPlayerTurn();
+        _tradeMenuButton = new Button
         {
             Content = new Label
             {
                 Text = "Trade Menu",
                 HorizontalAlignment = HorizontalAlignment.Right,
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center               
             },
-            HorizontalAlignment = HorizontalAlignment.Right
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Visible = false
         };
-        openTradeMenu.TouchDown += (s,a) => _ui.TradeMenu.OpenTradeMenu();
+        _tradeMenuButton.TouchDown += (s,a) => _ui.TradeMenu.OpenTradeMenu();
 
         _buildOptionPanel = new HorizontalStackPanel()
         {
@@ -76,8 +92,8 @@ public class Footer
         };
         FillBuildingOptions(_startingBuilding);
         footer.Widgets.Add(_buildOptionPanel);
-        footer.Widgets.Add(openTradeMenu);
-        footer.Widgets.Add(endTurnButton);
+        footer.Widgets.Add(_tradeMenuButton);
+        footer.Widgets.Add(_endTurnButton);
         return footer;
     }
     private void FillBuildingOptions(List<Building> buildOptions)
@@ -171,6 +187,10 @@ public class Footer
             buildingCost.Widgets.Add(buildingCostColumn2);
             buildingContainer.Widgets.Add(buildingCost);
             _buildOptionPanel.Widgets.Add(buildingContainer);
+            if(!(SelectedBuilding is null))
+            {                
+                MarkSelectedBuildingButton(SelectedBuilding);
+            }
         }
     }
 
@@ -178,6 +198,7 @@ public class Footer
     {
         TileMapManager.OnPlayerLandingBasePlaced -= FillBuildingSection;
         TileMapManager.OnBuildingPlaced += ClearBuildingSelection;
+        SelectedBuilding = null;
         FillBuildingOptions(_buildOptions);
         ClearBuildingSelection();
     }
@@ -193,12 +214,23 @@ public class Footer
         Button button = _buildingButtons[building];
         button.Border = new SolidBrush(GlobalColorScheme.AccentColor);
     }
+    public void ClearBuildingSelection(Faction faction)
+    {
+       if(faction == _game.FactionManager.Player)
+       {
+            ClearBuildingSelection();
+       }
+    }
+
     public void ClearBuildingSelection()
     {
-        SelectedBuilding = null;
-        foreach (Button button in _buildingButtons.Values)
+        if(SelectedBuilding != _game.BuildOptionLoader.StartingBase)
         {
-            ResetBuildingButton(button);
+            SelectedBuilding = null;
+            foreach (Button button in _buildingButtons.Values)
+            {
+                ResetBuildingButton(button);
+            }
         }
     }
     private void ResetBuildingButton(Button button)
@@ -214,7 +246,7 @@ public class Footer
             Dictionary<ResourceType, int> missingResources = building.BuildCost;
             foreach(ResourceType resource in missingResources.Keys)
             {
-                missingResources[resource] -= faction.RessourceStock[resource];
+                missingResources[resource] -= faction.ResourceStock[resource];
             }
             string message = "You cannot build " + building.Name + ". You are missing: ";
             foreach(ResourceType resource in missingResources.Keys)
@@ -223,5 +255,19 @@ public class Footer
             }
             _ui.GamePlayDashboard.DisplayMessage("Not enough Ressources", message);
         }
+    }
+
+    private void ShowButtons()
+    {
+        _endTurnButton.Visible = true;
+        _tradeMenuButton.Visible = true;
+        TileMapManager.OnPlayerLandingBasePlaced -= ShowButtons;
+    }
+
+    private void HideButtons()
+    {
+        _endTurnButton.Visible = false;
+        _tradeMenuButton.Visible = false;
+        TileMapManager.OnPlayerLandingBasePlaced += ShowButtons;
     }
 }

@@ -20,12 +20,13 @@ public class GamePlayUI
     public GamePlayUI(ColoneconGame game, TurnManager turnManager)
     {
         _game = game;
+        _desktop = new Desktop();
+
         GamePlayDashboard = new Dashboard(_game);
         GamePlayFooter = new Footer(game,this, turnManager);
-        _gamePlayHeader = new Header(turnManager);
-        TradeMenu = new TradeMenu(_game.FactionManager, this);
+        _gamePlayHeader = new Header(turnManager, _desktop);
+        TradeMenu = new TradeMenu(_game.FactionManager, this);        
         
-        _desktop = new Desktop();
         Panel header = _gamePlayHeader.CreateHeader();
         VerticalStackPanel dashbord = GamePlayDashboard.CreateDashboard();
         HorizontalStackPanel footer = GamePlayFooter.CreateFooter();
@@ -37,6 +38,12 @@ public class GamePlayUI
         _desktop.Widgets.Add(TradeMenu.TradeMenuPanel);
         _desktop.Widgets.Add(footer);
 
+        TileMapManager.OnPlayerLandingBasePlaced += HideStartingMessage;
+        Header.OnRestartGame += Reset;
+    }
+    public void Reset()
+    {
+        _startingMessage.Visible = true;
         TileMapManager.OnPlayerLandingBasePlaced += HideStartingMessage;
     }
     private void CreateStartingMethod()
@@ -61,5 +68,4 @@ public class GamePlayUI
         // Draw the Myra UI
         _desktop.Render();
     }
-
 }

@@ -10,7 +10,7 @@ public class TileMapManager
     public Dictionary<Tile, Point> TileMapByTiles {get; private set;}
     private Random _rnd;
 
-    public delegate void BuildingPlacedEventHandler();
+    public delegate void BuildingPlacedEventHandler(Faction faction);
     public static event BuildingPlacedEventHandler OnBuildingPlaced;
     public delegate void PlayerLandingBasePlacedEventHandler();
     public static event PlayerLandingBasePlacedEventHandler OnPlayerLandingBasePlaced;
@@ -24,11 +24,19 @@ public class TileMapManager
         TileMapByTiles = new Dictionary<Tile, Point>();
         _rnd = new Random();
         GenerateTileMap();
+
+        Header.OnRestartGame += Reset;
+    }
+
+    public void Reset()
+    {
+        GenerateTileMap();
     }
 
     public void GenerateTileMap()
     {
         TileMapByCoordinates.Clear();
+        TileMapByTiles.Clear();
         for (int i = 0; i < MapSize.Y;i++)
         {
             //for odd rows we want 1 tile more then for even
@@ -45,7 +53,7 @@ public class TileMapManager
 
     private int GetRandomMiraDeposit()
     {
-        int miraDeposit = Math.Max(0,_rnd.Next(-10,10))*100;
+        int miraDeposit = Math.Max(0,_rnd.Next(-5,10))*20;
         return miraDeposit;
     }
 
@@ -82,7 +90,7 @@ public class TileMapManager
         {
             if(building.BuildCost is null) // can only be the Landingbase and i know this is hacky
             {
-                tile.OccupyTile(faction);
+                if(tile.TileOwner is null){tile.OccupyTile(faction);}
                 tile.PlaceBuilding(building);                
                 OccupyNeighbours(TileMapByTiles[tile], faction);
                 if(faction is Player)
@@ -92,12 +100,11 @@ public class TileMapManager
             }
             else if (tile.TileOwner == faction)
             {
-                 if(faction.SubtractResources(building.BuildCost))
+                if(faction.SubtractResources(building.BuildCost))
                 {
-                    tile.OccupyTile(faction);
                     tile.PlaceBuilding(building);                
                     OccupyNeighbours(TileMapByTiles[tile], faction);
-                    OnBuildingPlaced?.Invoke();
+                    OnBuildingPlaced?.Invoke(faction);
                 }
                 else
                 {

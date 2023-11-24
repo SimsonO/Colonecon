@@ -4,15 +4,13 @@ using Microsoft.Xna.Framework;
 
 public class NPCFaction : Faction
 {
-    public int AvailableTradeAmountFactionResource {get; private set;}
-    public int TradePrice{get; private set;}
     private int _tradeThreshhold; //Only Resources exceeding the threshhold are up for trade
     private NPCAI _ai;
     private Building _landingbase;
     private TileMapManager _tileMapManager;
-    public NPCFaction(string name, Color color, ResourceType factionResource, TileMapManager tileMapManager, BuildOptionLoader buildOptionLoader) : base(name, color, factionResource)
+    public NPCFaction(string name, Color color, ResourceType factionResource, TileMapManager tileMapManager, BuildOptionLoader buildOptionLoader, FactionManager factionManager) : base(name, color, factionResource)
     {
-        _ai = new NPCAI(this, tileMapManager, buildOptionLoader.BuildOptions);
+        _ai = new NPCAI(this, tileMapManager, buildOptionLoader.BuildOptions, factionManager);
         _tileMapManager = tileMapManager;
         _landingbase = buildOptionLoader.StartingBase;
 
@@ -30,7 +28,7 @@ public class NPCFaction : Faction
     private void CalculateTradeAmount()
     {
         CalculateTradeTheshhold();
-        AvailableTradeAmountFactionResource = Math.Max(RessourceStock[FactionResource] - _tradeThreshhold,0);
+        AvailableTradeAmountFactionResource = Math.Max(ResourceStock[FactionResource] - _tradeThreshhold,0);
     }
     private void CalculateTradeTheshhold()
     {   
@@ -40,20 +38,6 @@ public class NPCFaction : Faction
     private void CalculateTradePrice()
     {
         TradePrice = 10; // add some Log here to account supply/demand
-    }
-
-    public void SellFactionResource(int amount)
-    {
-       Dictionary<ResourceType,int> price = new Dictionary<ResourceType, int>
-       {
-           { ResourceType.Mira, amount * TradePrice }
-       };
-       Dictionary<ResourceType, int> ware = new Dictionary<ResourceType, int>
-       {
-        {FactionResource, amount}
-       };
-       AddRessources(price);
-       SubtractResources(ware);       
     }
 
     public void RunTurn()

@@ -58,9 +58,9 @@ public class ActionEvaluator
                 produce = action.Faction.ResourceProduce[resource];
             }
             int stock = 0;
-            if (action.Faction.RessourceStock.ContainsKey(resource))
+            if (action.Faction.ResourceStock.ContainsKey(resource))
             {
-                stock = action.Faction.RessourceStock[resource];
+                stock = action.Faction.ResourceStock[resource];
             }
             if (resource == ResourceType.Mira)
             {
@@ -93,9 +93,9 @@ public class ActionEvaluator
                 produce = action.Faction.ResourceProduce[resource];
             }
             int stock = 0;
-            if (action.Faction.RessourceStock.ContainsKey(resource))
+            if (action.Faction.ResourceStock.ContainsKey(resource))
             {
-                stock = action.Faction.RessourceStock[resource];
+                stock = action.Faction.ResourceStock[resource];
             }
             if (resource == ResourceType.Mira)
             {

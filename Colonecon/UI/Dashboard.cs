@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Colonecon;
 using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D;
+using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 
@@ -23,6 +24,7 @@ public class Dashboard
         _playerResourceDisplay = new Dictionary<ResourceType, Label>();
 
         Faction.OnResourcesChanged += UpdatePlayerResources;
+        TileMapManager.OnBuildingPlaced += UpdatePlayerResources;
         TileMapManager.OnPlayerLandingBasePlaced += ShowDashboard;
     }
     
@@ -33,7 +35,8 @@ public class Dashboard
             HorizontalAlignment = HorizontalAlignment.Right,
             VerticalAlignment = VerticalAlignment.Top,
             Visible = false,
-            Margin = new Thickness(16, 64)
+            Margin = new Thickness(16, 64),
+            Background = new SolidBrush(GlobalColorScheme.BackgroundColor)
         };
         _dashboard.Widgets.Add(CreateResourceDisplay());
         _dashboard.Widgets.Add(CreateInfoContainer());
@@ -80,7 +83,7 @@ public class Dashboard
 
     private HorizontalStackPanel CreateResourceDisplay()
     {
-        Dictionary<ResourceType, int> playerResources = _game.FactionManager.Player.RessourceStock;
+        Dictionary<ResourceType, int> playerResources = _game.FactionManager.Player.ResourceStock;
         
         var resourceDisplay = new HorizontalStackPanel
         {
@@ -113,9 +116,20 @@ public class Dashboard
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
             };
+            int produce = 0;
+            if(_game.FactionManager.Player.ResourceProduce.ContainsKey(resource))
+            {
+                produce = _game.FactionManager.Player.ResourceProduce[resource];
+            }
+            int consume = 0;
+            if(_game.FactionManager.Player.ResourceConsume.ContainsKey(resource))
+            {
+                consume = _game.FactionManager.Player.ResourceConsume[resource];
+            }
+            
             Label resourceAmount = new Label
             {
-                Text = playerResources[resource].ToString()
+                Text = playerResources[resource] + "| +" + produce + "| -" + consume
             };
             resourceStock.Widgets.Add(resourceSprite);
             resourceStock.Widgets.Add(resourceAmount);
@@ -138,13 +152,22 @@ public class Dashboard
     {
         if(faction == _game.FactionManager.Player)
         {
-            Dictionary<ResourceType, int> playerResources = _game.FactionManager.Player.RessourceStock;
+            Dictionary<ResourceType, int> playerResources = _game.FactionManager.Player.ResourceStock;
             foreach(ResourceType resource in playerResources.Keys)
             {
-                _playerResourceDisplay[resource].Text = playerResources[resource].ToString();
+                int produce = 0;
+                if(_game.FactionManager.Player.ResourceProduce.ContainsKey(resource))
+                {
+                    produce = _game.FactionManager.Player.ResourceProduce[resource];
+                }
+                int consume = 0;
+                if(_game.FactionManager.Player.ResourceConsume.ContainsKey(resource))
+                {
+                    consume = _game.FactionManager.Player.ResourceConsume[resource];
+                }
+                _playerResourceDisplay[resource].Text = playerResources[resource] + "| +" + produce + "| -" + consume;
             }
         }
-        
     }
     
     public void ShowBuildingInfo(Building building)

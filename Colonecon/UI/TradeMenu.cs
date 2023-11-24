@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
@@ -7,6 +8,7 @@ public class TradeMenu
     private FactionManager _factionManager;
     private GamePlayUI _ui;
     private Dictionary<NPCFaction, Label[]> _tradeMenuContent;
+    private Label[] _offerContent;
     public HorizontalStackPanel TradeMenuPanel;
     public TradeMenu(FactionManager factionManager, GamePlayUI ui)
     {
@@ -23,24 +25,37 @@ public class TradeMenu
             VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Center,
             Visible = false,
-            Background = new SolidBrush(GlobalColorScheme.BackgroundColor)
+            Background = new SolidBrush(GlobalColorScheme.BackgroundColor),
+            Spacing = 32
         };
+        Label rowCaptions = new Label
+        {
+            Text = "/n Resource /n Available /n Price "
+        };
+        tradeMenu.Widgets.Add(rowCaptions);
         foreach(NPCFaction faction in _factionManager.NPCFactions)
         {
             VerticalStackPanel factionTradeMenu = CreateFactionTradeMenu(faction);
             tradeMenu.Widgets.Add(factionTradeMenu);
         }
+
+        VerticalStackPanel buyFromHomeMenu = CreateHomeTradeMenu();
+        tradeMenu.Widgets.Add(buyFromHomeMenu);
+        VerticalStackPanel sellMenu = CreateSellMenu();
+        tradeMenu.Widgets.Add(sellMenu);
+
         Button closeMenu = new Button
         {
             Content = new Label
             {
-                Text = "close"
+                Text = "X"
             },
             VerticalAlignment = VerticalAlignment.Top,
             HorizontalAlignment = HorizontalAlignment.Left
         };
         closeMenu.TouchDown += (s,a) => tradeMenu.Visible = false;
         tradeMenu.Widgets.Add(closeMenu);
+
         return tradeMenu;
     }
 
@@ -60,17 +75,17 @@ public class TradeMenu
         };
         Label TradeAmount = new Label
         {
-          Text = "Available: " + faction.AvailableTradeAmountFactionResource
+          Text = faction.AvailableTradeAmountFactionResource.ToString()
         };
         Label TradePrice = new Label
         {
-          Text = "Price: " + faction.TradePrice
+          Text = faction.TradePrice.ToString()
         };
         Button buy1factionResource = new Button
         {
             Content = new Label
             {
-                Text = "Buy 1 " + faction.FactionResource
+                Text = "+1"
             }
         };
         buy1factionResource.TouchDown += (s, Faction) => BuyFactionResource(faction, 1);
@@ -78,7 +93,7 @@ public class TradeMenu
         {
             Content = new Label
             {
-                Text = "Buy 5 " + faction.FactionResource
+                Text = "+5"
             }
         };
         buy5factionResource.TouchDown += (s, Faction) => BuyFactionResource(faction, 5);
@@ -103,6 +118,7 @@ public class TradeMenu
             if(_factionManager.Player.BuyResources(faction.FactionResource, tradeAmount, faction.TradePrice))
             {
                 faction.SellFactionResource(tradeAmount);
+                UpdateTradeInformation();
             }
             else
             {
@@ -115,6 +131,153 @@ public class TradeMenu
         }        
     }
 
+    private VerticalStackPanel CreateHomeTradeMenu()
+    {
+        Player player = _factionManager.Player;
+        VerticalStackPanel HomeTradeMenu = new VerticalStackPanel
+        {
+
+        };
+        Label homeName = new Label
+        {
+          Text = player.Name  
+        };
+        Label homeResource = new Label
+        {
+          Text = player.FactionResource.ToString()  
+        };
+        Label TradePrice = new Label
+        {
+          Text = "inf /n" + player.FactionResourcePrice
+        };
+        Button buy1factionResource = new Button
+        {
+            Content = new Label
+            {
+                Text = "+1"
+            }
+        };
+        buy1factionResource.TouchDown += (s, a) => BuyHomeResource(1);
+        Button buy5factionResource = new Button
+        {
+            Content = new Label
+            {
+                Text = "+5"
+            }
+        };
+        buy5factionResource.TouchDown += (s, a) => BuyHomeResource(5);
+        HomeTradeMenu.Widgets.Add(homeName);
+        HomeTradeMenu.Widgets.Add(homeResource);
+        HomeTradeMenu.Widgets.Add(TradePrice);
+        HomeTradeMenu.Widgets.Add(buy1factionResource);
+        HomeTradeMenu.Widgets.Add(buy5factionResource);
+
+        return HomeTradeMenu;
+    }
+
+    private void BuyHomeResource(int amount)
+    {
+        if(!_factionManager.Player.TradeFromHome(amount))
+        {
+            _ui.GamePlayDashboard.DisplayMessage("","You cannot afford this");
+        }
+        UpdateTradeInformation();
+    }
+
+    private VerticalStackPanel CreateSellMenu()
+    {
+        Player player = _factionManager.Player;
+        VerticalStackPanel SellMenu = new VerticalStackPanel
+        {
+
+        };
+        Label title = new Label
+        {
+          Text = "Offer for sale /n" + player.FactionResource 
+        };
+        Label available = new Label
+        {
+             Text = player.AvailableTradeAmountFactionResource.ToString()
+        };
+        Label tradePrice = new Label
+        {
+          Text = player.FactionResourcePrice.ToString()
+        };
+        HorizontalStackPanel buysell1 = new HorizontalStackPanel()
+        {
+            Spacing = 32
+        };
+        HorizontalStackPanel buysell5 = new HorizontalStackPanel()
+        {
+            Spacing = 32
+        };
+        Button offer1factionResource = new Button
+        {
+            Content = new Label
+            {
+                Text = "+1"
+            }
+        };
+        offer1factionResource.TouchDown += (s, a) => OfferHomeResource(1);
+        buysell1.Widgets.Add(offer1factionResource);
+        Button offer5factionResource = new Button
+        {
+            Content = new Label
+            {
+                Text = "+5"
+            }
+        };
+        offer5factionResource.TouchDown += (s, a) => OfferHomeResource(5);
+        buysell5.Widgets.Add(offer5factionResource);
+        Button reduceoffer1factionResource = new Button
+        {
+            Content = new Label
+            {
+                Text = "-1"
+            }
+        };
+        reduceoffer1factionResource.TouchDown += (s, a) => ReduceOfferResource(1);
+        buysell1.Widgets.Add(reduceoffer1factionResource);
+        Button reduceoffer5factionResource = new Button
+        {
+            Content = new Label
+            {
+                Text = "-5"
+            }
+        };
+        reduceoffer5factionResource.TouchDown += (s, a) => ReduceOfferResource(5);
+        buysell5.Widgets.Add(reduceoffer5factionResource);
+        SellMenu.Widgets.Add(title);
+        SellMenu.Widgets.Add(available);
+        SellMenu.Widgets.Add(tradePrice);
+        SellMenu.Widgets.Add(buysell1);
+        SellMenu.Widgets.Add(buysell5);
+
+        _offerContent = new Label[2]
+        {
+            available, tradePrice
+        };
+
+        return SellMenu;
+    }
+
+    private void OfferHomeResource(int amount)
+    {
+        if(!_factionManager.Player.IncreaseAvailableTradeAmount(amount))
+        {
+            _ui.GamePlayDashboard.DisplayMessage("","Not enough Resources");
+        }
+        UpdateTradeInformation();
+    }
+
+    private void ReduceOfferResource(int amount)
+    {
+        if(!_factionManager.Player.DecreaseAvailableTradeAmount(amount))
+        {
+            _ui.GamePlayDashboard.DisplayMessage("","You have not offered this much");
+        }
+        UpdateTradeInformation();
+    }
     
 
     public void OpenTradeMenu()
@@ -127,8 +290,10 @@ public class TradeMenu
     {
         foreach(NPCFaction faction in _tradeMenuContent.Keys)
         {
-            _tradeMenuContent[faction][0].Text = "Available: " + faction.AvailableTradeAmountFactionResource;
-            _tradeMenuContent[faction][1].Text ="Price: " + faction.TradePrice;
+            _tradeMenuContent[faction][0].Text = faction.AvailableTradeAmountFactionResource.ToString();
+            _tradeMenuContent[faction][1].Text = faction.TradePrice.ToString();
         }
+        _offerContent[0].Text = _factionManager.Player.AvailableTradeAmountFactionResource.ToString();
+        _offerContent[1].Text = _factionManager.Player.TradePrice.ToString();
     }
 }

@@ -66,7 +66,7 @@ public class TileMapView
             // Determine the rectangle where the tile texture will be drawn
             Rectangle destinationRectangle = new Rectangle((int)drawX, (int)drawY, _tileWidth, _tileHeight);
             //get the colorTint based of MiraDeposit
-            float colorIntensity = 1f - 0.4f * (float)Math.Round((float)tile.MiraStartDeposit/1000,1);
+            float colorIntensity = 1f - 0.4f * (float)Math.Round((float)tile.MiraCurrentDeposit/200,1);
             Color tileColor = GlobalColorScheme.AdjustIntensity(GlobalColorScheme.TileColor, colorIntensity);            
             // Draw the tile
             _spriteBatch.Draw(_tileTexture, destinationRectangle, tileColor);
