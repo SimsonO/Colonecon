@@ -23,7 +23,7 @@ public class GamePlayUI
         _desktop = new Desktop();
 
         GamePlayDashboard = new Dashboard(_game);
-        GamePlayFooter = new Footer(game,this, turnManager);
+        GamePlayFooter = new Footer(game,this, turnManager, _desktop);
         _gamePlayHeader = new Header(turnManager, _desktop);
         TradeMenu = new TradeMenu(_game.FactionManager, this);        
         

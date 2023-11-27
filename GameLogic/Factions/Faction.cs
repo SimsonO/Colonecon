@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 
 public abstract class Faction
@@ -14,8 +13,14 @@ public abstract class Faction
     public Dictionary<ResourceType, int> ResourceConsume {get; private set;}
     public Dictionary<ResourceType, int> ResourceProduce {get; private set;}
     public List<Tile> Territory;
+    public ResearchUpgrade MineDeeperUpgrade;
+    public ResearchUpgrade MineFasterUpgrade;
+    public ResearchUpgrade FactoryMineUpgrade;
+    public List<ResearchUpgrade> ResearchUpgrades;
+
     public delegate void ResourcesChangedEventHandler(Faction faction);
     public static event ResourcesChangedEventHandler OnResourcesChanged;
+    
 
     protected Faction(string name, Color color, ResourceType factionResource)
     {
@@ -29,12 +34,48 @@ public abstract class Faction
             {ResourceType.Mira, 0 },
             {ResourceType.Energy, 0},
             {ResourceType.Communium, 30},
-            {ResourceType.TerraSteel, 0},
-            {ResourceType.Vorixium, 0},
-            {ResourceType.Zytha, 0}
+            {ResourceType.TerraSteel, 5},
+            {ResourceType.Vorixium, 5},
+            {ResourceType.Zytha, 5}
         };
         ResourceConsume = new Dictionary<ResourceType, int>();
         ResourceProduce = new Dictionary<ResourceType, int>();
+        MineDeeperUpgrade = new ResearchUpgrade()
+        {
+            Name = "Mine Deeper",
+            Description = "Mira Mines won't reduce the deposit for the next turn",
+            UpgradeCost = new Dictionary<ResourceType, int>
+            {
+                {ResourceType.Vorixium, 5},
+                {ResourceType.Zytha, 5}
+            }
+        };
+        MineFasterUpgrade = new ResearchUpgrade()
+        {
+            Name = "Mine Faster",
+            Description = "Mira Mines will produce double the amount next turn",
+            UpgradeCost = new Dictionary<ResourceType, int>
+            {
+                {ResourceType.TerraSteel, 5},
+                {ResourceType.Zytha, 5}
+            }
+        };
+        FactoryMineUpgrade = new ResearchUpgrade() 
+        {
+            Name = "Upgrad Factories",
+            Description = "Factories will produce 5 Mira next turn",
+            UpgradeCost =  new Dictionary<ResourceType, int>
+            {
+                {ResourceType.TerraSteel, 5},
+                {ResourceType.Vorixium, 5}
+            }
+        };
+        ResearchUpgrades = new List<ResearchUpgrade>
+        {
+            MineDeeperUpgrade,
+            MineFasterUpgrade,
+            FactoryMineUpgrade
+        };
 
         TileMapManager.OnBuildingPlaced += UpdateProduce;
         TileMapManager.OnBuildingPlaced += UpdateConsume;
@@ -48,13 +89,15 @@ public abstract class Faction
         {
             {ResourceType.Mira, 0 },
             {ResourceType.Energy, 0},
-            {ResourceType.Communium, 30},
-            {ResourceType.TerraSteel, 0},
-            {ResourceType.Vorixium, 0},
-            {ResourceType.Zytha, 0}
+            {ResourceType.Communium, 35},
+            {ResourceType.TerraSteel, 5},
+            {ResourceType.Vorixium, 5},
+            {ResourceType.Zytha, 5}
         };
         ResourceConsume = new Dictionary<ResourceType, int>();
         ResourceProduce = new Dictionary<ResourceType, int>();
+        MineDeeperUpgrade.Deactivate();
+        MineFasterUpgrade.Deactivate();
         OnResourcesChanged?.Invoke(this);
     }
 
@@ -122,9 +165,20 @@ public abstract class Faction
                 if(tile.Building.ProductionRates is not null)
                 {
                     Dictionary<ResourceType, int> producedResources = tile.Building.ProductionRates;
+                    if(FactoryMineUpgrade.Active && tile.Building.Name == "Factory")
+                    {
+                        producedResources.Add(ResourceType.Mira,5);
+                    }
                     if(producedResources.ContainsKey(ResourceType.Mira))
                     {
-                       producedResources[ResourceType.Mira] = tile.MineMira(producedResources[ResourceType.Mira]);
+                       if(MineFasterUpgrade.Active)
+                       {
+                            producedResources[ResourceType.Mira] *=2;
+                       }
+                       if(!MineDeeperUpgrade.Active)
+                       {
+                            producedResources[ResourceType.Mira] = tile.MineMira(producedResources[ResourceType.Mira]);
+                       }                       
                     }
                     AddRessources(producedResources);
                 }                
@@ -252,5 +306,18 @@ public abstract class Faction
         return enoughMira;
         
     }
-    public abstract void EndTurn();
+
+    public void ActivateUprade(ResearchUpgrade upgrade)
+    {
+        //add check for Price here
+        upgrade.SetActive();
+    }
+    public virtual void EndTurn()
+    {
+        ProduceResources();
+        ConsumeResources();
+        MineDeeperUpgrade.Deactivate();
+        MineFasterUpgrade.Deactivate();
+        FactoryMineUpgrade.Deactivate();
+    }
 }

@@ -12,6 +12,8 @@ public class TileMapManager
 
     public delegate void BuildingPlacedEventHandler(Faction faction);
     public static event BuildingPlacedEventHandler OnBuildingPlaced;
+    public delegate void ScienceLabBuildEventHandler(Faction faction);
+    public static event ScienceLabBuildEventHandler OnScienceLabBuild;
     public delegate void PlayerLandingBasePlacedEventHandler();
     public static event PlayerLandingBasePlacedEventHandler OnPlayerLandingBasePlaced;
     public delegate void NotEnoughResourcesEventHandler(Building building, Faction faction);
@@ -105,6 +107,10 @@ public class TileMapManager
                     tile.PlaceBuilding(building);                
                     OccupyNeighbours(TileMapByTiles[tile], faction);
                     OnBuildingPlaced?.Invoke(faction);
+                    if(building.Name == "Science Laboratory")//no time left, i have to make shortcuts
+                    {   
+                        OnScienceLabBuild?.Invoke(faction);
+                    }
                 }
                 else
                 {

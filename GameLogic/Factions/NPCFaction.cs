@@ -14,8 +14,7 @@ public class NPCFaction : Faction
         _tileMapManager = tileMapManager;
         _landingbase = buildOptionLoader.StartingBase;
 
-        TileMapManager.OnPlayerLandingBasePlaced += PlaceLandingBase; //The first building is always the starting base. After that each npc builds it startingBase
-        
+        TileMapManager.OnPlayerLandingBasePlaced += PlaceLandingBase; //The first building is always the starting base. After that each npc builds it startingBase  
     }
 
     private void PlaceLandingBase()
@@ -46,9 +45,8 @@ public class NPCFaction : Faction
     }
     public override void EndTurn()
     {
-        ProduceResources();
-        ConsumeResources();
         CalculateTradeAmount();
         CalculateTradePrice();
+        base.EndTurn();
     }
 }

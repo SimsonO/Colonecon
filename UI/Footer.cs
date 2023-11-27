@@ -15,6 +15,7 @@ public class Footer
     
     private ColoneconGame _game;
     private GamePlayUI _ui;
+    private Desktop _desktop;
     private TurnManager _turnManager;
     public Building SelectedBuilding {get; private set;}
     private List<Building> _buildOptions;
@@ -22,10 +23,12 @@ public class Footer
     private HorizontalStackPanel _buildOptionPanel;
     private Button _endTurnButton;
     private Button _tradeMenuButton;
-    private Dictionary<Building, Button> _buildingButtons = new Dictionary<Building, Button>(); 
-    public Footer(ColoneconGame game, GamePlayUI ui, TurnManager turnManager)
+    private Dictionary<Building, Button> _buildingButtons = new Dictionary<Building, Button>();
+    private Button _upgrades;
+    public Footer(ColoneconGame game, GamePlayUI ui, TurnManager turnManager, Desktop desktop)
     {
         _game = game;
+        _desktop = desktop;
         _buildOptions = game.BuildOptionLoader.BuildOptions;
         
         _startingBuilding = new List<Building>
@@ -40,6 +43,7 @@ public class Footer
         TileMapManager.OnPlayerLandingBasePlaced += FillBuildingSection;
         TileMapManager.OnPlayerLandingBasePlaced += ShowButtons;
         TileMapManager.OnNotEnoughResources += InformAboutMissingRessources;
+        TileMapManager.OnScienceLabBuild +=ShowUpgrades;
         Header.OnRestartGame += Reset;
     }
 
@@ -56,10 +60,23 @@ public class Footer
     {
         HorizontalStackPanel footer = new HorizontalStackPanel
         {
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Bottom
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Bottom,
+            Spacing  = 32
         };
-        _endTurnButton = new Button
+        _buildOptionPanel = new HorizontalStackPanel()
+        {
+            Spacing = 8,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Background = new SolidBrush(GlobalColorScheme.BackgroundColor)
+        };
+        FillBuildingOptions(_startingBuilding);
+
+        VerticalStackPanel buttonPanel = new VerticalStackPanel
+        {
+            Spacing = 8
+        };
+         _endTurnButton = new Button
         {
             Content = new Label
             {
@@ -83,17 +100,24 @@ public class Footer
             Visible = false
         };
         _tradeMenuButton.TouchDown += (s,a) => _ui.TradeMenu.OpenTradeMenu();
-
-        _buildOptionPanel = new HorizontalStackPanel()
+        _upgrades = new Button
         {
-            Spacing = 16,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Background = new SolidBrush(GlobalColorScheme.BackgroundColor)
+            Content = new Label
+            {
+                Text = "Research",
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Center               
+            },
+            HorizontalAlignment = HorizontalAlignment.Right,
+            Visible = false
         };
-        FillBuildingOptions(_startingBuilding);
+        CreateResearchWindow();
+        
         footer.Widgets.Add(_buildOptionPanel);
-        footer.Widgets.Add(_tradeMenuButton);
-        footer.Widgets.Add(_endTurnButton);
+        buttonPanel.Widgets.Add(_tradeMenuButton);
+        buttonPanel.Widgets.Add(_upgrades);
+        buttonPanel.Widgets.Add(_endTurnButton);
+        footer.Widgets.Add(buttonPanel);
         return footer;
     }
     private void FillBuildingOptions(List<Building> buildOptions)
@@ -257,6 +281,98 @@ public class Footer
         }
     }
 
+    #region Research
+    private void CreateResearchWindow()
+    {
+        Window research = new Window
+        {
+            Title = "Research"
+        };
+        VerticalStackPanel researchContent = new VerticalStackPanel
+        {
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Spacing = 16
+        };
+        foreach(ResearchUpgrade upgrade in _game.FactionManager.Player.ResearchUpgrades)
+        {
+            HorizontalStackPanel upgradePanel = new HorizontalStackPanel
+            {
+                Spacing = 8
+            };
+            Label upgradeName = new Label
+            {
+                Text = upgrade.Name
+            };
+            upgradePanel.Widgets.Add(upgradeName);
+            Label upgradeDescription = new Label
+            {
+                Text = upgrade.Description
+            };
+            upgradePanel.Widgets.Add(upgradeDescription);
+            VerticalStackPanel upgradeCost = new VerticalStackPanel
+            {
+               
+            };
+            if(upgrade.UpgradeCost is not null)
+            {
+                foreach (ResourceType resource in upgrade.UpgradeCost.Keys)
+                {
+                    HorizontalStackPanel upgradeCostPanel = new HorizontalStackPanel();
+                    String spritePath = "sprites/" + resource;
+                    Texture2D textureRes = _game.Content.Load<Texture2D>(spritePath);
+                    Image resourceSprite = new Image()
+                    {
+                        Width = 16,
+                        Height = 16,
+                        Color = GlobalColorScheme.PrimaryColor,
+                        Renderable = new TextureRegion(textureRes),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                    };
+                    Label resourceAmount = new Label
+                    {
+                        Text = upgrade.UpgradeCost[resource].ToString()
+                    };
+                    upgradeCostPanel.Widgets.Add(resourceSprite);
+                    upgradeCostPanel.Widgets.Add(resourceAmount);
+                    upgradeCost.Widgets.Add(upgradeCostPanel);
+                }
+            }
+            upgradePanel.Widgets.Add(upgradeCost);
+            Button upgradeButton = new Button
+            {
+                Content = new Label
+                {
+                    Text = "research",
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center
+                }
+                
+            };            
+            upgradeButton.TouchDown += (s, ResearchUpgrade) => _game.FactionManager.Player.ActivateUprade(upgrade);
+            upgradePanel.Widgets.Add(upgradeButton);
+            researchContent.Widgets.Add(upgradePanel);
+        }
+        
+        research.Content = researchContent;
+        
+        _upgrades.TouchDown += (s, Desktop) => research.ShowModal(_desktop);
+    }
+   
+
+    
+
+    private void ShowUpgrades(Faction faction)
+    {
+        if(faction == _game.FactionManager.Player)
+        {
+            _upgrades.Visible = true;
+            TileMapManager.OnScienceLabBuild -=ShowUpgrades;
+        }  
+    }
+
+    #endregion
     private void ShowButtons()
     {
         _endTurnButton.Visible = true;
@@ -264,10 +380,13 @@ public class Footer
         TileMapManager.OnPlayerLandingBasePlaced -= ShowButtons;
     }
 
+
     private void HideButtons()
     {
         _endTurnButton.Visible = false;
         _tradeMenuButton.Visible = false;
+        _upgrades.Visible = false;
         TileMapManager.OnPlayerLandingBasePlaced += ShowButtons;
+        TileMapManager.OnScienceLabBuild +=ShowUpgrades;
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
@@ -5,12 +6,6 @@ public class Player : Faction
 {
     public Player(string name, Color color, ResourceType factionResource) : base(name, color, factionResource)
     {
-    }
-
-    public override void EndTurn()
-    {
-        ProduceResources();
-        ConsumeResources();
     }
 
     public bool IncreaseAvailableTradeAmount(int amount)
@@ -33,5 +28,5 @@ public class Player : Faction
             return true;
         }
         return false;
-    }            
+    }
 }
