@@ -21,6 +21,9 @@ public class ActionEvaluator
             case INPCTradingAction tradeAction:
                 EvaluateTradeAction(tradeAction);
                 break;
+            case NPCResearchAction researchAction:
+                EvaluateResearchAction(researchAction);
+                break;
             default:
                 throw new InvalidOperationException("Unknown action type");
         }
@@ -116,5 +119,73 @@ public class ActionEvaluator
     private void EvaluateTradeAction(INPCTradingAction action)
     {
         action.Value = 10 + _rnd.Next(-10,100);
+    }
+
+    private void EvaluateResearchAction(NPCResearchAction action)
+    {
+        switch (action.Upgrade.Name)
+        {
+            case "Mine Deeper": 
+                EvaluateMineDeeperAction(action);
+                break;
+            case "Mine Faster":
+                EvaluateMineFaster(action);
+                break;
+            case "Upgrade Factories":
+                EvaluateUpgradeFactories(action);
+                break;
+            default:
+                throw new InvalidOperationException("Unknown action type");
+        }
+    }
+
+    private void EvaluateMineDeeperAction(NPCResearchAction action)
+    {
+        int value = EvaluateCost(action);
+        foreach (Tile tile in action.Faction.Territory)
+        {
+            if(tile.MiraCurrentDeposit < 2 * (tile.Building?.ProductionRates[ResourceType.Mira] ?? 0))
+            {
+                 value += tile.Building?.ProductionRates[ResourceType.Mira] ?? 0;
+            }
+            else
+            {
+                value += Math.Min(tile.Building?.ProductionRates[ResourceType.Mira] ?? 0, 2); //arbitrary value if enough mira there. Would be better to have turncounter here
+            }
+            
+        }
+        action.Value = value;
+    }
+
+    private void EvaluateMineFaster(NPCResearchAction action)
+    {
+        int value = EvaluateCost(action);
+        foreach (Tile tile in action.Faction.Territory)
+        {
+            value += tile.Building?.ProductionRates[ResourceType.Mira] ?? 0;
+        }
+        action.Value = value;
+    }
+
+    private void EvaluateUpgradeFactories(NPCResearchAction action)
+    {
+        int value = EvaluateCost(action);
+        foreach (Tile tile in action.Faction.Territory)
+        {
+            if (tile.Building.Name == "Factory") // i hate the code  write today
+            {
+                value += 5;
+            }
+        }
+    }
+
+    private int EvaluateCost(NPCResearchAction action)
+    {
+        int value = 0;
+        foreach (ResourceType resource in action.Upgrade.UpgradeCost.Keys)
+        {
+            value -= action.Upgrade.UpgradeCost[resource] * action.Faction.TradePrice; // i just assume that the Trade is the same for all factions
+        }
+        return value;
     }
 }

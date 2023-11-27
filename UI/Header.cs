@@ -63,6 +63,7 @@ public class Header
         };
         restartGameButton.TouchDown += (s, a) => menu.Close();
         restartGameButton.TouchDown += (s, a) => OnRestartGame?.Invoke();
+        restartGameButton.TouchDown += (s, a) => UpdateTurnCounter(0);
         menuButton.TouchDown += (s, Desktop) => menu.ShowModal(_desktop);
         menu.Content = restartGameButton;
 

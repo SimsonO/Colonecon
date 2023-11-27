@@ -43,6 +43,7 @@ public class NPCAI
     {
         List<INPCAction> actions = GetPossibleBuildActions();
         actions.AddRange(GetPossibleTradeActions());
+        actions.AddRange(GetResearchActions());
         return actions;
     }
 
@@ -51,7 +52,7 @@ public class NPCAI
         List<INPCAction> buildingActions = new List<INPCAction>();
         foreach(Building building in _buildingOptions)
         {
-            if(_faction.EnoughResources(building))
+            if(_faction.EnoughResources(building.BuildCost))
             {
                 foreach(Tile tile in _faction.Territory)
                 {
@@ -98,6 +99,24 @@ public class NPCAI
                     tradingActions.Add(action);
                 }
         return tradingActions;
+    }
+
+    private List<INPCAction> GetResearchActions()
+    {
+        List<INPCAction> actions = new List<INPCAction>();
+        if(_faction.ResearchEnabled)
+        {
+            
+            foreach(ResearchUpgrade upgrade in _faction.ResearchUpgrades)
+            {
+                if(_faction.EnoughResources(upgrade.UpgradeCost))
+                {
+                    NPCResearchAction action = new NPCResearchAction(_faction,upgrade);
+                    actions.Add(action);
+                }
+            }
+        }
+        return actions;
     }
 
     private INPCAction GetHighestValueAction(List<INPCAction> actions)

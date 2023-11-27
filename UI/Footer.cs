@@ -25,6 +25,7 @@ public class Footer
     private Button _tradeMenuButton;
     private Dictionary<Building, Button> _buildingButtons = new Dictionary<Building, Button>();
     private Button _upgrades;
+    private Dictionary<ResearchUpgrade, HorizontalStackPanel> _upgradePanels;
     public Footer(ColoneconGame game, GamePlayUI ui, TurnManager turnManager, Desktop desktop)
     {
         _game = game;
@@ -88,6 +89,7 @@ public class Footer
             Visible = false
         };
         _endTurnButton.TouchDown += (s, a) => _turnManager.EndPlayerTurn();
+        _endTurnButton.TouchDown += (s, a) => ResetUpgradePanels();
         _tradeMenuButton = new Button
         {
             Content = new Label
@@ -120,6 +122,8 @@ public class Footer
         footer.Widgets.Add(buttonPanel);
         return footer;
     }
+
+    #region BuildingOptions
     private void FillBuildingOptions(List<Building> buildOptions)
     {
         _buildOptionPanel.Widgets.Clear();
@@ -281,6 +285,7 @@ public class Footer
         }
     }
 
+    #endregion
     #region Research
     private void CreateResearchWindow()
     {
@@ -294,6 +299,7 @@ public class Footer
             HorizontalAlignment = HorizontalAlignment.Center,
             Spacing = 16
         };
+        _upgradePanels = new Dictionary<ResearchUpgrade, HorizontalStackPanel>();
         foreach(ResearchUpgrade upgrade in _game.FactionManager.Player.ResearchUpgrades)
         {
             HorizontalStackPanel upgradePanel = new HorizontalStackPanel
@@ -347,12 +353,14 @@ public class Footer
                     Text = "research",
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center
-                }
+                },
+                BorderThickness = new Thickness(8)
                 
             };            
-            upgradeButton.TouchDown += (s, ResearchUpgrade) => _game.FactionManager.Player.ActivateUprade(upgrade);
+            upgradeButton.TouchDown += (s, ResearchUpgrade) => ActivateUprade(upgrade);
             upgradePanel.Widgets.Add(upgradeButton);
             researchContent.Widgets.Add(upgradePanel);
+            _upgradePanels.Add(upgrade, upgradePanel);
         }
         
         research.Content = researchContent;
@@ -360,8 +368,17 @@ public class Footer
         _upgrades.TouchDown += (s, Desktop) => research.ShowModal(_desktop);
     }
    
-
-    
+    private void ActivateUprade(ResearchUpgrade upgrade)
+    {
+        if(_game.FactionManager.Player.ActivateUprade(upgrade))
+        {
+            _upgradePanels[upgrade].Border = new SolidBrush(GlobalColorScheme.AccentColor);
+        }
+        else
+        {
+            _ui.GamePlayDashboard.DisplayMessage("none","Not enough resources");
+        }
+    }
 
     private void ShowUpgrades(Faction faction)
     {
@@ -370,6 +387,14 @@ public class Footer
             _upgrades.Visible = true;
             TileMapManager.OnScienceLabBuild -=ShowUpgrades;
         }  
+    }
+
+    private void ResetUpgradePanels()
+    {
+        foreach(ResearchUpgrade upgrade in _upgradePanels.Keys)
+        {
+            _upgradePanels[upgrade].Border = null;
+        }
     }
 
     #endregion

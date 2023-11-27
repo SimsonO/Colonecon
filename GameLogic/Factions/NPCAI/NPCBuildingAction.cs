@@ -1,5 +1,3 @@
-using System;
-
 public class NPCBuildingAction : INPCAction
 {
     public double Value {get; set;}

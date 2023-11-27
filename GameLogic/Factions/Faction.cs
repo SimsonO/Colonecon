@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
@@ -10,9 +11,14 @@ public abstract class Faction
     public int TradePrice;
     public int FactionResourcePrice {get; private set;}
     public Dictionary<ResourceType, int> ResourceStock {get; private set;}
+    private Dictionary<ResourceType, int> _startingStock;
     public Dictionary<ResourceType, int> ResourceConsume {get; private set;}
     public Dictionary<ResourceType, int> ResourceProduce {get; private set;}
+    
+
     public List<Tile> Territory;
+
+    public bool ResearchEnabled {get; private set;}
     public ResearchUpgrade MineDeeperUpgrade;
     public ResearchUpgrade MineFasterUpgrade;
     public ResearchUpgrade FactoryMineUpgrade;
@@ -29,15 +35,16 @@ public abstract class Faction
         FactionResource = factionResource;
         FactionResourcePrice = 5;
         Territory = new List<Tile>();
-        ResourceStock = new Dictionary<ResourceType, int>
+        _startingStock = new Dictionary<ResourceType, int>
         {
             {ResourceType.Mira, 0 },
             {ResourceType.Energy, 0},
             {ResourceType.Communium, 30},
-            {ResourceType.TerraSteel, 5},
-            {ResourceType.Vorixium, 5},
-            {ResourceType.Zytha, 5}
+            {ResourceType.TerraSteel, 20},
+            {ResourceType.Vorixium, 20},
+            {ResourceType.Zytha, 20}
         };
+        ResourceStock = _startingStock;
         ResourceConsume = new Dictionary<ResourceType, int>();
         ResourceProduce = new Dictionary<ResourceType, int>();
         MineDeeperUpgrade = new ResearchUpgrade()
@@ -62,7 +69,7 @@ public abstract class Faction
         };
         FactoryMineUpgrade = new ResearchUpgrade() 
         {
-            Name = "Upgrad Factories",
+            Name = "Upgrade Factories",
             Description = "Factories will produce 5 Mira next turn",
             UpgradeCost =  new Dictionary<ResourceType, int>
             {
@@ -80,20 +87,13 @@ public abstract class Faction
         TileMapManager.OnBuildingPlaced += UpdateProduce;
         TileMapManager.OnBuildingPlaced += UpdateConsume;
         Header.OnRestartGame += Reset;
+        TileMapManager.OnScienceLabBuild += EnableResearch;
     }
 
     public void Reset()
     {
         Territory = new List<Tile>();
-        ResourceStock = new Dictionary<ResourceType, int>
-        {
-            {ResourceType.Mira, 0 },
-            {ResourceType.Energy, 0},
-            {ResourceType.Communium, 35},
-            {ResourceType.TerraSteel, 5},
-            {ResourceType.Vorixium, 5},
-            {ResourceType.Zytha, 5}
-        };
+        ResourceStock = _startingStock;
         ResourceConsume = new Dictionary<ResourceType, int>();
         ResourceProduce = new Dictionary<ResourceType, int>();
         MineDeeperUpgrade.Deactivate();
@@ -143,12 +143,11 @@ public abstract class Faction
         return true;
     }
 
-    public bool EnoughResources(Building building)
+    public bool EnoughResources( Dictionary<ResourceType, int> cost)
     {
-        Dictionary<ResourceType, int> buildingCost = building.BuildCost;
-        foreach(ResourceType resource in buildingCost.Keys)
+        foreach(ResourceType resource in cost.Keys)
         {
-            if(ResourceStock[resource] < buildingCost[resource])
+            if(ResourceStock[resource] < cost[resource])
             {
                return false;
             }
@@ -307,10 +306,17 @@ public abstract class Faction
         
     }
 
-    public void ActivateUprade(ResearchUpgrade upgrade)
+    public bool ActivateUprade(ResearchUpgrade upgrade)
     {
-        //add check for Price here
-        upgrade.SetActive();
+        if(ResearchEnabled)
+        {
+            if(SubtractResources(upgrade.UpgradeCost))
+            {
+                upgrade.SetActive();
+                return true;
+            }
+        }        
+        return false;
     }
     public virtual void EndTurn()
     {
@@ -319,5 +325,13 @@ public abstract class Faction
         MineDeeperUpgrade.Deactivate();
         MineFasterUpgrade.Deactivate();
         FactoryMineUpgrade.Deactivate();
+    }
+
+    private void EnableResearch(Faction faction)
+    {
+        if(faction == this)
+        {
+            ResearchEnabled = true;
+        }
     }
 }

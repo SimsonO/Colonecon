@@ -17,7 +17,7 @@ public class BuildOptionLoader
 
     private List<Building> LoadBuildingData()
     {
-        string json = File.ReadAllText("../Colonecon/Content/data/buildings.json");
+        string json = File.ReadAllText("Content/data/buildings.json");
         BuildingOptions buildingOptions = JsonSerializer.Deserialize<BuildingOptions>(json);
         return buildingOptions.Buildings;
     }
