@@ -43,6 +43,10 @@ public class ActionEvaluator
         value = EvaluateProduce(action, value);
         value = EvaluateConsume(action, value);
         value -= action.Tile.MiraCurrentDeposit; // OpportunityCost
+        if(action.Building.Name == "Science Laboratory" && !action.Faction.ResearchEnabled)
+        {
+            value += 1000;
+        }
         action.Value = value;
     }
 
@@ -69,13 +73,20 @@ public class ActionEvaluator
             {
                 value += 2 * action.Tile.MiraCurrentDeposit; //2* to mitigate Opportunity costs
             }
-            else if (consume > produce)
+            else if(resource == ResourceType.Energy)
             {
-                value += 1000;
+                if (consume > produce)
+                {
+                    value += 1000;
+                }
+                else
+                {
+                    value += 50 / Math.Max((produce - consume),1) - stock;
+                }
             }
-            else
+            else if(resource == ResourceType.Communium)
             {
-                value += action.Building.ProductionRates[resource] * 10  * (Math.Max(1,30-produce))- stock;
+                value += Math.Max(2000 / Math.Max((produce - consume),1), 5);
             }
         }
         return value;
@@ -118,7 +129,15 @@ public class ActionEvaluator
 
     private void EvaluateTradeAction(INPCTradingAction action)
     {
-        action.Value = 10 + _rnd.Next(-10,100);
+        if(action.Faction.ResourceStock[action.TradingPartner.FactionResource] < 5)
+        {
+            action.Value = 1000;
+        }
+        else if(action.Faction.ResourceStock[action.TradingPartner.FactionResource] < 15)
+        {
+            action.Value = _rnd.Next(10-action.Faction.ResourceStock[action.TradingPartner.FactionResource],10);// just do it sometimes
+        }
+        
     }
 
     private void EvaluateResearchAction(NPCResearchAction action)
@@ -144,15 +163,17 @@ public class ActionEvaluator
         int value = EvaluateCost(action);
         foreach (Tile tile in action.Faction.Territory)
         {
-            if(tile.MiraCurrentDeposit < 2 * (tile.Building?.ProductionRates[ResourceType.Mira] ?? 0))
+            if(tile.Building?.ProductionRates?.ContainsKey(ResourceType.Mira) ?? false)
             {
-                 value += tile.Building?.ProductionRates[ResourceType.Mira] ?? 0;
+                if(tile.MiraCurrentDeposit < 2 * (tile.Building.ProductionRates[ResourceType.Mira]))
+                {
+                    value += tile.Building.ProductionRates[ResourceType.Mira];
+                }
+                else
+                {
+                    value += Math.Min(tile.Building.ProductionRates[ResourceType.Mira], 2); //arbitrary value if enough mira there. Would be better to have turncounter here
+                }
             }
-            else
-            {
-                value += Math.Min(tile.Building?.ProductionRates[ResourceType.Mira] ?? 0, 2); //arbitrary value if enough mira there. Would be better to have turncounter here
-            }
-            
         }
         action.Value = value;
     }
@@ -162,7 +183,10 @@ public class ActionEvaluator
         int value = EvaluateCost(action);
         foreach (Tile tile in action.Faction.Territory)
         {
-            value += tile.Building?.ProductionRates[ResourceType.Mira] ?? 0;
+            if(tile.Building?.ProductionRates?.ContainsKey(ResourceType.Mira) ?? false)
+            {
+                value += tile.Building.ProductionRates[ResourceType.Mira];
+            }
         }
         action.Value = value;
     }
@@ -172,7 +196,7 @@ public class ActionEvaluator
         int value = EvaluateCost(action);
         foreach (Tile tile in action.Faction.Territory)
         {
-            if (tile.Building.Name == "Factory") // i hate the code  write today
+            if ((tile.Building?.Name ?? "null") == "Factory") // i hate the code  write today
             {
                 value += 5;
             }

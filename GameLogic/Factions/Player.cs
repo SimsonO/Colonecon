@@ -6,6 +6,18 @@ public class Player : Faction
 {
     public Player(string name, Color color, ResourceType factionResource) : base(name, color, factionResource)
     {
+
+    }
+
+    public override void Reset()
+    {
+        base.Reset();
+        BoostPlayerStart();
+    }
+
+    public void BoostPlayerStart()
+    {
+        ResourceStock[ResourceType.Communium] += 10;
     }
 
     public bool IncreaseAvailableTradeAmount(int amount)

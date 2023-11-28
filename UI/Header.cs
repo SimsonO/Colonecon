@@ -69,7 +69,7 @@ public class Header
 
         return _header;
     }
-    private void UpdateTurnCounter(int newTurnCounter)
+    public void UpdateTurnCounter(int newTurnCounter)
     {
         _turnCounter.Text = newTurnCounter+ "/" + _turnManager.MaxTurns;
     }

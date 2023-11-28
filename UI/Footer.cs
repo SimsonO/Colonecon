@@ -45,6 +45,7 @@ public class Footer
         TileMapManager.OnPlayerLandingBasePlaced += ShowButtons;
         TileMapManager.OnNotEnoughResources += InformAboutMissingRessources;
         TileMapManager.OnScienceLabBuild +=ShowUpgrades;
+        GamePlayUI.OnRestartGame += Reset;
         Header.OnRestartGame += Reset;
     }
 

@@ -27,6 +27,7 @@ public class TileMapManager
         _rnd = new Random();
         GenerateTileMap();
 
+        GamePlayUI.OnRestartGame += Reset;
         Header.OnRestartGame += Reset;
     }
 

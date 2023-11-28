@@ -1,5 +1,6 @@
-using System;
+
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 
 public abstract class Faction
@@ -34,17 +35,18 @@ public abstract class Faction
         Color = color;
         FactionResource = factionResource;
         FactionResourcePrice = 5;
+        TradePrice = 5;
         Territory = new List<Tile>();
         _startingStock = new Dictionary<ResourceType, int>
         {
             {ResourceType.Mira, 0 },
             {ResourceType.Energy, 0},
-            {ResourceType.Communium, 30},
-            {ResourceType.TerraSteel, 20},
-            {ResourceType.Vorixium, 20},
-            {ResourceType.Zytha, 20}
+            {ResourceType.Communium, 20},
+            {ResourceType.TerraSteel, 0},
+            {ResourceType.Vorixium, 0},
+            {ResourceType.Zytha, 0}
         };
-        ResourceStock = _startingStock;
+        ResourceStock = _startingStock.ToDictionary(entry => entry.Key, entry => entry.Value);
         ResourceConsume = new Dictionary<ResourceType, int>();
         ResourceProduce = new Dictionary<ResourceType, int>();
         MineDeeperUpgrade = new ResearchUpgrade()
@@ -53,8 +55,8 @@ public abstract class Faction
             Description = "Mira Mines won't reduce the deposit for the next turn",
             UpgradeCost = new Dictionary<ResourceType, int>
             {
-                {ResourceType.Vorixium, 5},
-                {ResourceType.Zytha, 5}
+                {ResourceType.Vorixium, 2},
+                {ResourceType.Zytha, 2}
             }
         };
         MineFasterUpgrade = new ResearchUpgrade()
@@ -73,8 +75,8 @@ public abstract class Faction
             Description = "Factories will produce 5 Mira next turn",
             UpgradeCost =  new Dictionary<ResourceType, int>
             {
-                {ResourceType.TerraSteel, 5},
-                {ResourceType.Vorixium, 5}
+                {ResourceType.TerraSteel, 2},
+                {ResourceType.Vorixium, 3}
             }
         };
         ResearchUpgrades = new List<ResearchUpgrade>
@@ -86,18 +88,21 @@ public abstract class Faction
 
         TileMapManager.OnBuildingPlaced += UpdateProduce;
         TileMapManager.OnBuildingPlaced += UpdateConsume;
+        GamePlayUI.OnRestartGame += Reset;
         Header.OnRestartGame += Reset;
         TileMapManager.OnScienceLabBuild += EnableResearch;
     }
 
-    public void Reset()
+    public virtual void Reset()
     {
         Territory = new List<Tile>();
-        ResourceStock = _startingStock;
+        ResourceStock.Clear();
+        ResourceStock = _startingStock.ToDictionary(entry => entry.Key, entry => entry.Value);
         ResourceConsume = new Dictionary<ResourceType, int>();
         ResourceProduce = new Dictionary<ResourceType, int>();
         MineDeeperUpgrade.Deactivate();
         MineFasterUpgrade.Deactivate();
+        ResearchEnabled = false;
         OnResourcesChanged?.Invoke(this);
     }
 
@@ -163,7 +168,7 @@ public abstract class Faction
             { 
                 if(tile.Building.ProductionRates is not null)
                 {
-                    Dictionary<ResourceType, int> producedResources = tile.Building.ProductionRates;
+                    Dictionary<ResourceType, int> producedResources = tile.Building.ProductionRates.ToDictionary(entry => entry.Key, entry => entry.Value);
                     if(FactoryMineUpgrade.Active && tile.Building.Name == "Factory")
                     {
                         producedResources.Add(ResourceType.Mira,5);

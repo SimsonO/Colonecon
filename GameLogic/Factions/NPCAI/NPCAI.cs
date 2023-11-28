@@ -60,7 +60,11 @@ public class NPCAI
                     {
                         NPCBuildingAction action = new NPCBuildingAction(_faction, building, tile, _tileMapManager);
                         _actionEvaluator.Evaluate(action);
-                        buildingActions.Add(action);
+                        if(action.Value > 0)
+                        {
+                            buildingActions.Add(action);
+                        }
+                        
                     }
                 }
             }
@@ -79,7 +83,10 @@ public class NPCAI
                 {
                     NPCBuyFromHome action = new NPCBuyFromHome(_faction, 5);
                     _actionEvaluator.Evaluate(action);
-                    tradingActions.Add(action);
+                    if(action.Value > 0)
+                    {
+                        tradingActions.Add(action);
+                    }
                 }
             }
             else
@@ -88,7 +95,10 @@ public class NPCAI
                 {
                     NPCTradingAction action = new NPCTradingAction(_faction, 5, faction);
                     _actionEvaluator.Evaluate(action);
-                    tradingActions.Add(action);
+                    if(action.Value > 0)
+                    {
+                        tradingActions.Add(action);
+                    }
                 }
             }
         }
@@ -96,7 +106,10 @@ public class NPCAI
                 {
                     NPCTradingAction action = new NPCTradingAction(_faction, 5, _factionManager.Player);
                     _actionEvaluator.Evaluate(action);
-                    tradingActions.Add(action);
+                    if(action.Value > 0)
+                    {
+                        tradingActions.Add(action);
+                    }
                 }
         return tradingActions;
     }
@@ -106,13 +119,17 @@ public class NPCAI
         List<INPCAction> actions = new List<INPCAction>();
         if(_faction.ResearchEnabled)
         {
-            
             foreach(ResearchUpgrade upgrade in _faction.ResearchUpgrades)
             {
                 if(_faction.EnoughResources(upgrade.UpgradeCost))
                 {
                     NPCResearchAction action = new NPCResearchAction(_faction,upgrade);
-                    actions.Add(action);
+                    _actionEvaluator.Evaluate(action);
+                    if(action.Value > 0)
+                    {
+                        actions.Add(action);
+                    }
+                    
                 }
             }
         }

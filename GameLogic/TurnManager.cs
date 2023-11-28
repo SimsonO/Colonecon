@@ -9,12 +9,16 @@ public class TurnManager
     private FactionManager _factionManager;
     public delegate void TurnEndedEventHandler(int newTurnCounter);
     public static event TurnEndedEventHandler OnTurnEndedEvent;
+
+    public delegate void GameEndedEventHandler(int highscore);
+    public static event GameEndedEventHandler OnGameEndedEvent;
     public TurnManager(FactionManager factionManager)
     {
         TurnCounter = 0;
         MaxTurns = 20;
         _factionManager = factionManager;
 
+        GamePlayUI.OnRestartGame += Reset;
         Header.OnRestartGame += Reset;
     }
 
@@ -42,7 +46,10 @@ public class TurnManager
     private void RunNPCTurn(int index)
     {
         NPCFaction faction = _factionManager.NPCFactions[index];
-        faction.RunTurn();
+        if(!faction.HasLeftThePlanet)
+        {
+            faction.RunTurn();
+        }
         if(index + 1 < _factionManager.NPCFactions.Count)
         {
             RunNPCTurn(index + 1);
@@ -56,7 +63,7 @@ public class TurnManager
 
     public void EndGame()
     {
-        //Calculate Highscore
-        //Show Endscreen or send Endgame Event
+        int highscore = _factionManager.Player.ResourceStock[ResourceType.Mira];
+        OnGameEndedEvent?.Invoke(highscore);
     }
 }

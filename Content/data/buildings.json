@@ -44,7 +44,7 @@
             "ProductionRates": {},
             "ConsumptionRates": {},
             "BuildCost": {
-                "Communium": 20,
+                "Communium": 10,
                 "TerraSteel": 5,
                 "Vorixium": 5,
                 "Zytha": 5

@@ -8,10 +8,8 @@ public class ColoneconGame : Game
 {
     public GraphicsDeviceManager Graphics;
     public TileMapManager TileManager {get; private set;}
-    
     public BuildOptionLoader BuildOptionLoader{get; private set;}
     private GamePlayScreen _gamePlayScreen;
-
     public FactionManager FactionManager {get; private set;}
 
     public ColoneconGame()

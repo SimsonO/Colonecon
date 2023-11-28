@@ -15,8 +15,13 @@ public class GamePlayUI
     public Footer GamePlayFooter;
     public TradeMenu TradeMenu;
     private Label _startingMessage;
+    private Window _factionLeftInfoWindow;
+    private Label _factionLeftInfoContent;
+    private Window _gameOverWindow;
+    private Label _gameOverText;
 
-    
+    public delegate void RestartGameEventHandler();
+    public static event RestartGameEventHandler OnRestartGame;
     public GamePlayUI(ColoneconGame game, TurnManager turnManager)
     {
         _game = game;
@@ -30,7 +35,9 @@ public class GamePlayUI
         Panel header = _gamePlayHeader.CreateHeader();
         VerticalStackPanel dashbord = GamePlayDashboard.CreateDashboard();
         HorizontalStackPanel footer = GamePlayFooter.CreateFooter();
-        CreateStartingMethod();
+        CreateStartingMessage();
+        CreateFactionLeaveWindow();
+        CreateGameOverWindow();
 
         _desktop.Widgets.Add(_startingMessage);
         _desktop.Widgets.Add(header);
@@ -39,14 +46,17 @@ public class GamePlayUI
         _desktop.Widgets.Add(footer);
 
         TileMapManager.OnPlayerLandingBasePlaced += HideStartingMessage;
+        NPCFaction.OnFactionLeftEvent += FactionLeaveWindow;
         Header.OnRestartGame += Reset;
+        TurnManager.OnGameEndedEvent += ShowGameOverWindow;
     }
+
     public void Reset()
     {
         _startingMessage.Visible = true;
         TileMapManager.OnPlayerLandingBasePlaced += HideStartingMessage;
     }
-    private void CreateStartingMethod()
+    private void CreateStartingMessage()
     {
         _startingMessage = new Label
         {
@@ -62,6 +72,65 @@ public class GamePlayUI
         _startingMessage.Visible = false;
         TileMapManager.OnPlayerLandingBasePlaced -= HideStartingMessage;
     }
+
+    private void CreateFactionLeaveWindow()
+    {
+        _factionLeftInfoWindow = new Window
+        {
+            Title = "A faction Left"
+        };
+        _factionLeftInfoContent = new Label
+        {
+            Text = ""
+        };
+        _factionLeftInfoWindow.Content = _factionLeftInfoContent;
+    }
+
+    private void FactionLeaveWindow(Faction faction)
+    {
+        _factionLeftInfoContent.Text = "The " + faction.Name + " weren't profitable anymore and left the Planet";
+        _factionLeftInfoWindow.ShowModal(_desktop);
+    }
+
+    private void CreateGameOverWindow()
+    {
+        _gameOverWindow = new Window
+        {
+            Title = "Game Over"
+        };
+        VerticalStackPanel _gameOverContent = new VerticalStackPanel
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            Spacing = 32
+        };
+        _gameOverText = new Label
+        {
+            Text = ""
+        };
+        Button restartGameButton = new Button
+        {
+            Content = new Label
+            {
+                Text = "Try again",
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            }
+        };
+        restartGameButton.TouchDown += (s, a) => _gameOverWindow.Close();
+        restartGameButton.TouchDown += (s, a) => OnRestartGame?.Invoke();
+         restartGameButton.TouchDown += (s, a) => Reset();
+        restartGameButton.TouchDown += (s, a) => _gamePlayHeader.UpdateTurnCounter(0);
+        _gameOverContent.Widgets.Add(_gameOverText);
+        _gameOverWindow.Content = _gameOverContent;
+    }
+
+    private void ShowGameOverWindow(int highscore)
+    {
+        _gameOverText.Text = "Your Highcore is " + highscore;
+        _gameOverWindow.ShowModal(_desktop);
+    }
+
 
     public void Draw(GameTime gameTime)
     {
