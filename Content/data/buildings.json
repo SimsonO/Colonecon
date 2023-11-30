@@ -2,6 +2,7 @@
     "Buildings": [
         {
             "Name": "Power Plant",
+            "Description": "Procudes Energy to sustain other buildings",
             "SpritePath": "sprites/PowerPlant",
             "ProductionRates": {
                 "Energy": 10
@@ -13,9 +14,10 @@
         },
         {
             "Name": "Mira Mine",
+            "Description": "Procudes Mira if placed on a Mira-Deposit",
             "SpritePath": "sprites/MiraMine",
             "ProductionRates": {
-                "Mira": 10
+                "Mira": 20
             },
             "ConsumptionRates": {
                 "Energy": 3
@@ -26,9 +28,10 @@
         },
         {
             "Name": "Factory",
+            "Description": "Procudes Communium, which is used as building material",
             "SpritePath": "sprites/Factory",
             "ProductionRates": {
-                "Communium": 10
+                "Communium": 5
             },
             "ConsumptionRates": {
                 "Energy": 2
@@ -39,6 +42,7 @@
         },
         {
             "Name": "Science Laboratory",
+            "Description": "Enables research",
             "SpritePath": "sprites/ScienceLab",
             "BuildLimit": 1,
             "ProductionRates": {},

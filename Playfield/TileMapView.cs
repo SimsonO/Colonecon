@@ -28,7 +28,14 @@ public class TileMapView
             _buildingSprites.Add(building, buildingTexture);
         }
         _buildingSprites.Add(game.BuildOptionLoader.StartingBase, game.Content.Load<Texture2D>(game.BuildOptionLoader.StartingBase.SpritePath));
+        _tileWidth = _tileHeight = GetTileSize(game.GraphicsDevice.Viewport.Width, _tileManager.MapSize.X);
+        //_tileHeight = GetTileSize(game.GraphicsDevice.Viewport.Height, _tileManager.MapSize.Y);
         _initialOffset = GetOffsetToCenterTileMap(game.GraphicsDevice.Viewport.Width, game.GraphicsDevice.Viewport.Height);
+    }
+
+    private int GetTileSize(int screenLength, int numberOfTiles )
+    {
+        return (int) (screenLength * 0.8 / numberOfTiles);
     }
 
     private Point GetOffsetToCenterTileMap(int screenWidth, int screenHeight)
@@ -66,7 +73,7 @@ public class TileMapView
             // Determine the rectangle where the tile texture will be drawn
             Rectangle destinationRectangle = new Rectangle((int)drawX, (int)drawY, _tileWidth, _tileHeight);
             //get the colorTint based of MiraDeposit
-            float colorIntensity = 1f - 0.4f * (float)Math.Round((float)tile.MiraCurrentDeposit/200,1);
+            float colorIntensity = 1f - 0.4f * (float)Math.Round((float)tile.MiraCurrentDeposit/120,1);
             Color tileColor = GlobalColorScheme.AdjustIntensity(GlobalColorScheme.TileColor, colorIntensity);            
             // Draw the tile
             _spriteBatch.Draw(_tileTexture, destinationRectangle, tileColor);

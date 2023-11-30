@@ -19,17 +19,28 @@ public class NPCFaction : Faction
         _ai = new NPCAI(this, tileMapManager, buildOptionLoader.BuildOptions, factionManager);
         _tileMapManager = tileMapManager;
         _landingbase = buildOptionLoader.StartingBase;
-        _miraThreshhold = 250;
+        _miraThreshhold = 100;
 
         TileMapManager.OnPlayerLandingBasePlaced += PlaceLandingBase; //The first building is always the starting base. After that each npc builds it startingBase
         TurnManager.OnTurnEndedEvent += UpdateTurnCounter;
+    }
+
+    public override void Reset()
+    {
+        base.Reset();
     }
 
     private void PlaceLandingBase()
     {
         Point landingCoordinates = _tileMapManager.GetStartingCoordinatesNPC();
         _tileMapManager.BuildOnTile(landingCoordinates,_landingbase,this);
-    }  
+    } 
+
+    public override void SellFactionResource(int amount)
+    {
+       base.Reset();
+       CalculateTradeAmount();
+    }
 
     private void CalculateTradeAmount()
     {

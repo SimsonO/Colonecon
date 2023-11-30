@@ -15,7 +15,7 @@ public class TurnManager
     public TurnManager(FactionManager factionManager)
     {
         TurnCounter = 0;
-        MaxTurns = 20;
+        MaxTurns = 10;
         _factionManager = factionManager;
 
         GamePlayUI.OnRestartGame += Reset;

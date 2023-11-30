@@ -13,6 +13,7 @@ public class Dashboard
     private VerticalStackPanel _dashboard;
     private Panel _buildingInformationPanel;
     private Panel _tileInformationPanel;
+    private Label _tileInfo;
     private Panel _messagePanel;
     private Label _message;
 
@@ -26,6 +27,7 @@ public class Dashboard
         Faction.OnResourcesChanged += UpdatePlayerResources;
         TileMapManager.OnBuildingPlaced += UpdatePlayerResources;
         TileMapManager.OnPlayerLandingBasePlaced += ShowDashboard;
+        TileMapInputHandler.OnTileHovered += ShowTileInfo;
     }
     
     public VerticalStackPanel CreateDashboard()
@@ -35,20 +37,23 @@ public class Dashboard
             HorizontalAlignment = HorizontalAlignment.Right,
             VerticalAlignment = VerticalAlignment.Top,
             Visible = false,
-            Margin = new Thickness(16, 64),
-            Background = new SolidBrush(GlobalColorScheme.BackgroundColor)
+            Margin = new Thickness(16, (int)(_game.GraphicsDevice.Viewport.Height * 0.1)),
+            Spacing = 124,
+            Background = new SolidBrush(GlobalColorScheme.BackgroundColor),
+            Width = (int)(_game.GraphicsDevice.Viewport.Width * 0.1)
         };
         _dashboard.Widgets.Add(CreateResourceDisplay());
         _dashboard.Widgets.Add(CreateInfoContainer());
         return _dashboard;
     }
 
-    private Panel CreateInfoContainer()
+    private VerticalStackPanel CreateInfoContainer()
     {
-        Panel infoContainer = new Panel
+        VerticalStackPanel infoContainer = new VerticalStackPanel
         {
             HorizontalAlignment = HorizontalAlignment.Left,
-            VerticalAlignment = VerticalAlignment.Top
+            VerticalAlignment = VerticalAlignment.Top,
+            Spacing = 32
         };
         _buildingInformationPanel = new Panel
         {
@@ -72,36 +77,30 @@ public class Dashboard
         {
             Visible = false
         };
-        _messagePanel.Widgets.Add(_message);
+        _tileInfo = new Label
+        {
+            Text = "MiraDeposit: 0"
+        };
+        _tileInformationPanel.Widgets.Add(_tileInfo);
+        _messagePanel.Widgets.Add(_message);        
+        infoContainer.Widgets.Add(_tileInformationPanel);
         infoContainer.Widgets.Add(_buildingInformationPanel);
         infoContainer.Widgets.Add(_messagePanel);
-        infoContainer.Widgets.Add(_tileInformationPanel);
 
 
         return infoContainer;
     }
 
-    private HorizontalStackPanel CreateResourceDisplay()
+    private VerticalStackPanel CreateResourceDisplay()
     {
         Dictionary<ResourceType, int> playerResources = _game.FactionManager.Player.ResourceStock;
         
-        var resourceDisplay = new HorizontalStackPanel
+        var resourceDisplay = new VerticalStackPanel
         {
             VerticalAlignment = VerticalAlignment.Top,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             Spacing = 16            
         };
-        var resourceDisplayColumn1 = new VerticalStackPanel
-        {
-            VerticalAlignment = VerticalAlignment.Top,
-            HorizontalAlignment = HorizontalAlignment.Stretch
-        };
-        var resourceDisplayColumn2 = new VerticalStackPanel
-        {
-            VerticalAlignment = VerticalAlignment.Top,
-            HorizontalAlignment = HorizontalAlignment.Stretch
-        };
-        int i = 0;
         foreach(ResourceType resource in playerResources.Keys)
         {
             HorizontalStackPanel resourceStock = new HorizontalStackPanel();
@@ -134,18 +133,10 @@ public class Dashboard
             resourceStock.Widgets.Add(resourceSprite);
             resourceStock.Widgets.Add(resourceAmount);
             _playerResourceDisplay.Add(resource,resourceAmount);
-            if(i%2 == 0)
-            {
-                resourceDisplayColumn1.Widgets.Add(resourceStock);
-            }
-            else
-            {
-                resourceDisplayColumn2.Widgets.Add(resourceStock);
-            }
-            i++; 
+            
+            resourceDisplay.Widgets.Add(resourceStock); 
         }
-        resourceDisplay.Widgets.Add(resourceDisplayColumn1);
-        resourceDisplay.Widgets.Add(resourceDisplayColumn2);
+        
         return resourceDisplay;
     }
     private void UpdatePlayerResources(Faction faction)
@@ -173,12 +164,113 @@ public class Dashboard
     public void ShowBuildingInfo(Building building)
     {
         HideInfoPanels();
+        _buildingInformationPanel.Widgets.Clear();
+        _buildingInformationPanel.Widgets.Add(CreateBuilingInfoContent(building));
         _buildingInformationPanel.Visible = true;
+    }
+
+    private VerticalStackPanel CreateBuilingInfoContent(Building building)
+    {
+        VerticalStackPanel buildingInfo = new VerticalStackPanel
+        {
+            Spacing = 16
+        };
+
+        Label Name = new Label
+        {
+            Text = building.Name
+        };
+        buildingInfo.Widgets.Add(Name);
+        Label Description = new Label
+        {
+            Text = building.Description,
+            Wrap = true
+        };
+        buildingInfo.Widgets.Add(Description);
+        if((building.ProductionRates?.Count ?? 0) > 0)
+        {
+            Label Production = new Label
+            {
+                Text = "Production rates"
+            };
+            buildingInfo.Widgets.Add(Production);
+            foreach(ResourceType resource in building.ProductionRates.Keys)
+            {
+                HorizontalStackPanel resourceProduce = new HorizontalStackPanel();
+                String spritePath = "sprites/" + resource;
+                Texture2D texture = _game.Content.Load<Texture2D>(spritePath);
+                Image resourceSprite = new Image()
+                {
+                    Width = 16,
+                    Height = 16,
+                    Color = GlobalColorScheme.PrimaryColor,
+                    Renderable = new TextureRegion(texture),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };            
+                Label resourceAmount = new Label
+                {
+                    Text = building.ProductionRates[resource].ToString()
+                };
+                resourceProduce.Widgets.Add(resourceSprite);
+                resourceProduce.Widgets.Add(resourceAmount);
+                
+                buildingInfo.Widgets.Add(resourceProduce); 
+            }
+        }
+        if((building.ConsumptionRates?.Count ?? 0) > 0)
+        {
+            Label Consumption = new Label
+            {
+                Text = "Consumption rates"
+            };
+            buildingInfo.Widgets.Add(Consumption);
+            foreach(ResourceType resource in building.ConsumptionRates.Keys)
+            {
+                HorizontalStackPanel resourceConsumption = new HorizontalStackPanel();
+                String spritePath = "sprites/" + resource;
+                Texture2D texture = _game.Content.Load<Texture2D>(spritePath);
+                Image resourceSprite = new Image()
+                {
+                    Width = 16,
+                    Height = 16,
+                    Color = GlobalColorScheme.PrimaryColor,
+                    Renderable = new TextureRegion(texture),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };            
+                Label resourceAmount = new Label
+                {
+                    Text = building.ConsumptionRates[resource].ToString()
+                };
+                resourceConsumption.Widgets.Add(resourceSprite);
+                resourceConsumption.Widgets.Add(resourceAmount);
+                
+                buildingInfo.Widgets.Add(resourceConsumption); 
+            }
+        }     
+        return buildingInfo;
     }
 
     public void HideBuildingInfo()
     {
         _buildingInformationPanel.Visible = false;
+    }
+
+    public void ShowTileInfo(Tile tile)
+    {
+       
+        _tileInfo.Text = "Mira deposit: " + tile.MiraCurrentDeposit;
+        if(tile.Building is not null)
+        {
+            ShowBuildingInfo(tile.Building);
+            _tileInformationPanel.Visible = true;
+        }
+        else
+        {
+            HideInfoPanels();
+            _tileInformationPanel.Visible = true;
+        }
     }
 
     public void DisplayMessage (string title, string message)

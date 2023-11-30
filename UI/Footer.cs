@@ -55,7 +55,6 @@ public class Footer
         FillBuildingOptions(_startingBuilding);
         HideButtons();
         TileMapManager.OnPlayerLandingBasePlaced += FillBuildingSection;
-        TileMapManager.OnBuildingPlaced -= ClearBuildingSelection;
     }
 
     public HorizontalStackPanel CreateFooter()
@@ -83,11 +82,13 @@ public class Footer
             Content = new Label
             {
                 Text = "End Turn",
-                HorizontalAlignment = HorizontalAlignment.Right,
+                HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center
             },
             HorizontalAlignment = HorizontalAlignment.Right,
-            Visible = false
+            Visible = false,
+            Background = new SolidBrush(GlobalColorScheme.PrimaryColor),
+            Width = 128
         };
         _endTurnButton.TouchDown += (s, a) => _turnManager.EndPlayerTurn();
         _endTurnButton.TouchDown += (s, a) => ResetUpgradePanels();
@@ -96,11 +97,13 @@ public class Footer
             Content = new Label
             {
                 Text = "Trade Menu",
-                HorizontalAlignment = HorizontalAlignment.Right,
+                HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center               
             },
             HorizontalAlignment = HorizontalAlignment.Right,
-            Visible = false
+            Visible = false,
+            Background = new SolidBrush(GlobalColorScheme.PrimaryColor),
+            Width = 128
         };
         _tradeMenuButton.TouchDown += (s,a) => _ui.TradeMenu.OpenTradeMenu();
         _upgrades = new Button
@@ -108,11 +111,13 @@ public class Footer
             Content = new Label
             {
                 Text = "Research",
-                HorizontalAlignment = HorizontalAlignment.Right,
+                HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center               
             },
             HorizontalAlignment = HorizontalAlignment.Right,
-            Visible = false
+            Visible = false,
+            Background = new SolidBrush(GlobalColorScheme.PrimaryColor),
+            Width = 128
         };
         CreateResearchWindow();
         
@@ -226,7 +231,6 @@ public class Footer
     private void FillBuildingSection()
     {
         TileMapManager.OnPlayerLandingBasePlaced -= FillBuildingSection;
-        TileMapManager.OnBuildingPlaced += ClearBuildingSelection;
         SelectedBuilding = null;
         FillBuildingOptions(_buildOptions);
         ClearBuildingSelection();
@@ -272,7 +276,7 @@ public class Footer
     {
         if(faction == _game.FactionManager.Player)
         {
-            Dictionary<ResourceType, int> missingResources = building.BuildCost;
+            Dictionary<ResourceType, int> missingResources = building.BuildCost.ToDictionary(entry => entry.Key, entry => entry.Value);
             foreach(ResourceType resource in missingResources.Keys)
             {
                 missingResources[resource] -= faction.ResourceStock[resource];
@@ -292,7 +296,8 @@ public class Footer
     {
         Window research = new Window
         {
-            Title = "Research"
+            Title = "Research",
+            Background = new SolidBrush(GlobalColorScheme.BackgroundColor)
         };
         VerticalStackPanel researchContent = new VerticalStackPanel
         {

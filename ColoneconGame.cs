@@ -18,7 +18,7 @@ public class ColoneconGame : Game
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
-        TileManager = new TileMapManager(new Point(10,8));
+        TileManager = new TileMapManager(new Point(12,8));
         BuildOptionLoader = new BuildOptionLoader();
         FactionManager = new FactionManager(this);
         _gamePlayScreen = new GamePlayScreen(this);
@@ -27,6 +27,12 @@ public class ColoneconGame : Game
     protected override void Initialize()
     {
        
+        Graphics.PreferredBackBufferWidth = GraphicsDevice.DisplayMode.Width;
+        Graphics.PreferredBackBufferHeight = GraphicsDevice.DisplayMode.Height;
+        Graphics.ApplyChanges();
+
+        Window.IsBorderless = true;
+        Window.Position = new Point(0, 0);
         base.Initialize();
     }
 

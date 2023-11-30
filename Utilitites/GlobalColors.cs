@@ -6,11 +6,11 @@ public static class GlobalColorScheme
     // Define colors as static readonly properties or fields
     public static readonly Color BackgroundColor = new Color(51,41,115);
     public static readonly Color PrimaryColor = new Color(83,78,217);
-    public static readonly Color AccentColor = new Color(198, 155, 109);
+    public static readonly Color AccentColor = new Color(191,63,123);
     public static readonly Color TileColor = new Color(83,78,217);
-    public static readonly Color PlayerColor = new Color(242,93,80);
-    public static readonly Color NPCFaction1Color = new Color(242,68,114);
-    public static readonly Color NPCFaction2Color = new Color(191,63,123);
+    public static readonly Color PlayerColor = new Color(242,68,114);
+    public static readonly Color NPCFaction1Color =  new Color(242,93,80);
+    public static readonly Color NPCFaction2Color =  new Color(198, 155, 109);
     
     public static Color AdjustIntensity(Color baseColor, float intensityFactor)
     {

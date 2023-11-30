@@ -29,10 +29,10 @@ public class GamePlayUI
 
         GamePlayDashboard = new Dashboard(_game);
         GamePlayFooter = new Footer(game,this, turnManager, _desktop);
-        _gamePlayHeader = new Header(turnManager, _desktop);
-        TradeMenu = new TradeMenu(_game.FactionManager, this);        
+        _gamePlayHeader = new Header(turnManager, _desktop, _game);
+        TradeMenu = new TradeMenu(_game.FactionManager, this, _desktop, _game);        
         
-        Panel header = _gamePlayHeader.CreateHeader();
+        Panel header = _gamePlayHeader.CreateHeader((int)(_game.GraphicsDevice.Viewport.Height * 0.1));
         VerticalStackPanel dashbord = GamePlayDashboard.CreateDashboard();
         HorizontalStackPanel footer = GamePlayFooter.CreateFooter();
         CreateStartingMessage();
@@ -42,7 +42,6 @@ public class GamePlayUI
         _desktop.Widgets.Add(_startingMessage);
         _desktop.Widgets.Add(header);
         _desktop.Widgets.Add(dashbord);
-        _desktop.Widgets.Add(TradeMenu.TradeMenuPanel);
         _desktop.Widgets.Add(footer);
 
         TileMapManager.OnPlayerLandingBasePlaced += HideStartingMessage;

@@ -56,7 +56,7 @@ public class TileMapManager
 
     private int GetRandomMiraDeposit()
     {
-        int miraDeposit = Math.Max(0,_rnd.Next(-5,10))*20;
+        int miraDeposit = Math.Max(0,_rnd.Next(-2,20))*6;
         return miraDeposit;
     }
 

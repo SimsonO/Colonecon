@@ -1,31 +1,41 @@
 using System;
 using System.Collections.Generic;
+using Colonecon;
+using Microsoft.Xna.Framework.Graphics;
 using Myra.Graphics2D.Brushes;
+using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 
 public class TradeMenu
 {
     private FactionManager _factionManager;
     private GamePlayUI _ui;
+    private Desktop _desktop;
+    private ColoneconGame _game;
     private Dictionary<NPCFaction, Label[]> _tradeMenuContent;
     private Label[] _offerContent;
-    public HorizontalStackPanel TradeMenuPanel;
-    public TradeMenu(FactionManager factionManager, GamePlayUI ui)
+    public Window TradeMenuWindow;
+    public TradeMenu(FactionManager factionManager, GamePlayUI ui, Desktop desktop, ColoneconGame game)
     {
         _factionManager = factionManager;
         _ui = ui;
+        _desktop = desktop;
+        _game = game;
         
         _tradeMenuContent = new Dictionary<NPCFaction, Label[]>();
-        TradeMenuPanel = CreateTradeMenu();
+        TradeMenuWindow = CreateTradeWindow();
     }
-    private HorizontalStackPanel CreateTradeMenu()
+    private Window CreateTradeWindow()
     {
+        Window tradeWindow = new Window
+        {
+            Title = "Trade Menu",
+            Background = new SolidBrush(GlobalColorScheme.BackgroundColor)
+        };
         HorizontalStackPanel tradeMenu = new HorizontalStackPanel
         {
             VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Center,
-            Visible = false,
-            Background = new SolidBrush(GlobalColorScheme.BackgroundColor),
             Spacing = 32
         };
         Label rowCaptions = new Label
@@ -44,19 +54,8 @@ public class TradeMenu
         VerticalStackPanel sellMenu = CreateSellMenu();
         tradeMenu.Widgets.Add(sellMenu);
 
-        Button closeMenu = new Button
-        {
-            Content = new Label
-            {
-                Text = "X"
-            },
-            VerticalAlignment = VerticalAlignment.Top,
-            HorizontalAlignment = HorizontalAlignment.Left
-        };
-        closeMenu.TouchDown += (s,a) => tradeMenu.Visible = false;
-        tradeMenu.Widgets.Add(closeMenu);
-
-        return tradeMenu;
+        tradeWindow.Content = tradeMenu;
+        return tradeWindow;
     }
 
     private VerticalStackPanel CreateFactionTradeMenu(NPCFaction faction)
@@ -65,7 +64,7 @@ public class TradeMenu
         {
 
         };
-        Label factionName = new Label
+         Label factionName = new Label
         {
           Text = faction.Name  
         };
@@ -73,14 +72,44 @@ public class TradeMenu
         {
           Text = faction.FactionResource.ToString()  
         };
-        Label TradeAmount = new Label
+        HorizontalStackPanel tradeAmount = new HorizontalStackPanel();
+        Label resourceAmount = new Label
         {
-          Text = faction.AvailableTradeAmountFactionResource.ToString()
+            Text = faction.AvailableTradeAmountFactionResource.ToString()
         };
-        Label TradePrice = new Label
+        tradeAmount.Widgets.Add(resourceAmount);
+        String spritePath = "sprites/" + faction.FactionResource;
+        Texture2D textureRes = _game.Content.Load<Texture2D>(spritePath);
+        Image resourceSprite = new Image()
         {
-          Text = faction.TradePrice.ToString()
+            Width = 16,
+            Height = 16,
+            Color = GlobalColorScheme.PrimaryColor,
+            Renderable = new TextureRegion(textureRes),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
         };
+        tradeAmount.Widgets.Add(resourceSprite);
+        
+
+        HorizontalStackPanel tradePrice = new HorizontalStackPanel();
+        String spritePathMira = "sprites/" + ResourceType.Mira;
+        Texture2D textureMir = _game.Content.Load<Texture2D>(spritePathMira);
+        Label price = new Label
+        {
+            Text = faction.TradePrice.ToString()
+        };
+        tradePrice.Widgets.Add(price); 
+        Image resourceSpriteMira = new Image()
+        {
+            Width = 16,
+            Height = 16,
+            Color = GlobalColorScheme.PrimaryColor,
+            Renderable = new TextureRegion(textureMir),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        tradePrice.Widgets.Add(resourceSpriteMira);   
         Button buy1factionResource = new Button
         {
             Content = new Label
@@ -99,13 +128,13 @@ public class TradeMenu
         buy5factionResource.TouchDown += (s, Faction) => BuyFactionResource(faction, 5);
         factionTradeMenu.Widgets.Add(factionName);
         factionTradeMenu.Widgets.Add(factionResource);
-        factionTradeMenu.Widgets.Add(TradeAmount);
-        factionTradeMenu.Widgets.Add(TradePrice);
+        factionTradeMenu.Widgets.Add(tradeAmount);
+        factionTradeMenu.Widgets.Add(tradePrice);
         factionTradeMenu.Widgets.Add(buy1factionResource);
         factionTradeMenu.Widgets.Add(buy5factionResource);
         Label[] tradeInfo = new Label[2];
-        tradeInfo[0] = TradeAmount;
-        tradeInfo[1] = TradePrice;
+        tradeInfo[0] = resourceAmount;
+        tradeInfo[1] = price;
         _tradeMenuContent.Add(faction, tradeInfo);
         
         return factionTradeMenu;
@@ -146,10 +175,44 @@ public class TradeMenu
         {
           Text = player.FactionResource.ToString()  
         };
-        Label TradePrice = new Label
+
+        HorizontalStackPanel tradeAmount = new HorizontalStackPanel();
+        Label resourceAmount = new Label
         {
-          Text = "inf /n" + player.FactionResourcePrice
+            Text = "inf"
         };
+        tradeAmount.Widgets.Add(resourceAmount);
+        String spritePath = "sprites/" + player.FactionResource;
+        Texture2D textureRes = _game.Content.Load<Texture2D>(spritePath);
+        Image resourceSprite = new Image()
+        {
+            Width = 16,
+            Height = 16,
+            Color = GlobalColorScheme.PrimaryColor,
+            Renderable = new TextureRegion(textureRes),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        tradeAmount.Widgets.Add(resourceSprite);        
+
+        HorizontalStackPanel tradePrice = new HorizontalStackPanel();
+        String spritePathMira = "sprites/" + ResourceType.Mira;
+        Texture2D textureMir = _game.Content.Load<Texture2D>(spritePathMira);
+        Label price = new Label
+        {
+            Text = player.FactionResourcePrice.ToString()
+        };
+        tradePrice.Widgets.Add(price); 
+        Image resourceSpriteMira = new Image()
+        {
+            Width = 16,
+            Height = 16,
+            Color = GlobalColorScheme.PrimaryColor,
+            Renderable = new TextureRegion(textureMir),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        tradePrice.Widgets.Add(resourceSpriteMira); 
         Button buy1factionResource = new Button
         {
             Content = new Label
@@ -168,7 +231,8 @@ public class TradeMenu
         buy5factionResource.TouchDown += (s, a) => BuyHomeResource(5);
         HomeTradeMenu.Widgets.Add(homeName);
         HomeTradeMenu.Widgets.Add(homeResource);
-        HomeTradeMenu.Widgets.Add(TradePrice);
+        HomeTradeMenu.Widgets.Add(tradeAmount);
+        HomeTradeMenu.Widgets.Add(tradePrice);
         HomeTradeMenu.Widgets.Add(buy1factionResource);
         HomeTradeMenu.Widgets.Add(buy5factionResource);
 
@@ -195,14 +259,42 @@ public class TradeMenu
         {
           Text = "Offer for sale /n" + player.FactionResource 
         };
-        Label available = new Label
+        HorizontalStackPanel tradeAmount = new HorizontalStackPanel();
+        Label resourceAmount = new Label
         {
-             Text = player.AvailableTradeAmountFactionResource.ToString()
+            Text = player.AvailableTradeAmountFactionResource.ToString()
         };
-        Label tradePrice = new Label
+        tradeAmount.Widgets.Add(resourceAmount);
+        String spritePath = "sprites/" + player.FactionResource;
+        Texture2D textureRes = _game.Content.Load<Texture2D>(spritePath);
+        Image resourceSprite = new Image()
         {
-          Text = player.FactionResourcePrice.ToString()
+            Width = 16,
+            Height = 16,
+            Color = GlobalColorScheme.PrimaryColor,
+            Renderable = new TextureRegion(textureRes),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
         };
+        tradeAmount.Widgets.Add(resourceSprite);
+        HorizontalStackPanel tradePrice = new HorizontalStackPanel();
+        String spritePathMira = "sprites/" + ResourceType.Mira;
+        Texture2D textureMir = _game.Content.Load<Texture2D>(spritePathMira);
+        Label price = new Label
+        {
+            Text = player.FactionResourcePrice.ToString()
+        };
+        tradePrice.Widgets.Add(price); 
+        Image resourceSpriteMira = new Image()
+        {
+            Width = 16,
+            Height = 16,
+            Color = GlobalColorScheme.PrimaryColor,
+            Renderable = new TextureRegion(textureMir),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        tradePrice.Widgets.Add(resourceSpriteMira); 
         HorizontalStackPanel buysell1 = new HorizontalStackPanel()
         {
             Spacing = 32
@@ -248,14 +340,14 @@ public class TradeMenu
         reduceoffer5factionResource.TouchDown += (s, a) => ReduceOfferResource(5);
         buysell5.Widgets.Add(reduceoffer5factionResource);
         SellMenu.Widgets.Add(title);
-        SellMenu.Widgets.Add(available);
+        SellMenu.Widgets.Add(tradeAmount);
         SellMenu.Widgets.Add(tradePrice);
         SellMenu.Widgets.Add(buysell1);
         SellMenu.Widgets.Add(buysell5);
 
         _offerContent = new Label[2]
         {
-            available, tradePrice
+            resourceAmount, price
         };
 
         return SellMenu;
@@ -283,7 +375,7 @@ public class TradeMenu
     public void OpenTradeMenu()
     {
         UpdateTradeInformation();
-        TradeMenuPanel.Visible = true;
+        TradeMenuWindow.ShowModal(_desktop);
     }
 
     private void UpdateTradeInformation()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 public class Building
 {
     public string Name { get; set; }
+    public string Description { get; set; }
     public string SpritePath { get; set; }
     public int BuildLimit { get; set; }
     public Dictionary<ResourceType, int> ProductionRates { get; set; }

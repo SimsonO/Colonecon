@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using Colonecon;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,7 +8,7 @@ public class GamePlayScreen
     private SpriteBatch _spriteBatch;
     private TileMapView _tileMapView;
     private TurnManager _turnManager;
-    private TestHexfield _testHexfield;   //delete at some point
+    //private TestHexfield _testHexfield;   //debug only
     private GamePlayUI _gamePlayUI;
     private TileMapInputHandler _tileMapInputHandler;
 
@@ -22,7 +21,7 @@ public class GamePlayScreen
     {        
         _spriteBatch = new SpriteBatch(_game.GraphicsDevice);
         _tileMapView = new TileMapView(_spriteBatch,_game);
-        _testHexfield = new TestHexfield(_game, _tileMapView, _spriteBatch);      
+        //_testHexfield = new TestHexfield(_game, _tileMapView, _spriteBatch);      
         _turnManager = new TurnManager(_game.FactionManager);  
         _gamePlayUI = new GamePlayUI(_game, _turnManager);
         _tileMapInputHandler = new TileMapInputHandler(_game, _tileMapView, _game.TileManager, _gamePlayUI.GamePlayFooter);
@@ -30,8 +29,7 @@ public class GamePlayScreen
 
     public void Update(GameTime gameTime)
     {
-         // Update the UI library input
-        _testHexfield.Update(gameTime);
+        //_testHexfield.Update(gameTime);
         _tileMapInputHandler.Update(gameTime);
     }
 
@@ -42,7 +40,7 @@ public class GamePlayScreen
         // Render all parts of the screen
         DrawBackground();
        _tileMapView.DrawTileMap(gameTime);
-       _testHexfield.DrawHexCoordinates(gameTime);
+       //_testHexfield.DrawHexCoordinates(gameTime);
 
         _spriteBatch.End();
         //Render UI

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
 public class Player : Faction
@@ -17,7 +15,7 @@ public class Player : Faction
 
     public void BoostPlayerStart()
     {
-        ResourceStock[ResourceType.Communium] += 10;
+        AddRessources(ResourceType.Communium, 5);
     }
 
     public bool IncreaseAvailableTradeAmount(int amount)

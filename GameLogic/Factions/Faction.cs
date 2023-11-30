@@ -41,7 +41,7 @@ public abstract class Faction
         {
             {ResourceType.Mira, 0 },
             {ResourceType.Energy, 0},
-            {ResourceType.Communium, 20},
+            {ResourceType.Communium, 15},
             {ResourceType.TerraSteel, 0},
             {ResourceType.Vorixium, 0},
             {ResourceType.Zytha, 0}
@@ -277,7 +277,7 @@ public abstract class Faction
         return false;
     }
 
-    public void SellFactionResource(int amount)
+    public virtual void SellFactionResource(int amount)
     {
        Dictionary<ResourceType,int> price = new Dictionary<ResourceType, int>
        {
@@ -288,7 +288,7 @@ public abstract class Faction
         {FactionResource, amount}
        };
        AddRessources(price);
-       SubtractResources(ware);       
+       SubtractResources(ware);
     }
 
     public bool BuyResources(ResourceType resource, int amount, int unitTradePrice)

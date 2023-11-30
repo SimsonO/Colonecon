@@ -71,7 +71,7 @@ public class ActionEvaluator
             }
             if (resource == ResourceType.Mira)
             {
-                value += 2 * action.Tile.MiraCurrentDeposit; //2* to mitigate Opportunity costs
+                value += 10 * action.Tile.MiraCurrentDeposit; //2* to mitigate Opportunity costs
             }
             else if(resource == ResourceType.Energy)
             {
@@ -86,7 +86,7 @@ public class ActionEvaluator
             }
             else if(resource == ResourceType.Communium)
             {
-                value += Math.Max(2000 / Math.Max((produce - consume),1), 5);
+                value += Math.Max(1000 / Math.Max((produce - consume),1), 5);
             }
         }
         return value;
